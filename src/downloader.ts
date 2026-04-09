@@ -20,7 +20,7 @@ const CONCURRENCY = 3;                        // D-11: hardcoded, Phase 3 makes 
 const TIMEOUT_MS = 30_000;                    // D-05: 30 second per-image timeout
 const MOBILE_SIZE_LIMIT = 15 * 1024 * 1024;  // D-06: 15MB mobile limit
 
-const MIME_TO_EXT: Record<string, string> = {
+export const MIME_TO_EXT: Record<string, string> = {
 	'image/png': 'png',
 	'image/jpeg': 'jpg',
 	'image/gif': 'gif',
@@ -40,7 +40,7 @@ const MIME_TO_EXT: Record<string, string> = {
  * Validates that a Content-Type header indicates an image response.
  * D-08: Accept image/* and application/octet-stream; reject text/html etc.
  */
-function isValidImageContentType(contentType: string | undefined): boolean {
+export function isValidImageContentType(contentType: string | undefined): boolean {
 	if (!contentType) return false;
 	const ct = contentType.toLowerCase();
 	return ct.startsWith('image/') || ct === 'application/octet-stream';
@@ -51,7 +51,7 @@ function isValidImageContentType(contentType: string | undefined): boolean {
  * D-01: Priority — URL path segment → Content-Type inference → fallback png
  * D-02: CDN hash/UUID segments fall back to image-{timestamp}
  */
-function deriveFilenameFromUrl(url: string, contentType?: string): string {
+export function deriveFilenameFromUrl(url: string, contentType?: string): string {
 	// Strip query string and fragment before extracting path
 	const urlWithoutQuery = url.split('?')[0]?.split('#')[0] ?? '';
 	const pathSegment = urlWithoutQuery.split('/').pop() ?? '';
@@ -74,7 +74,7 @@ function deriveFilenameFromUrl(url: string, contentType?: string): string {
  * Derives a filename for a base64-encoded image.
  * D-03: Pattern is base64-{timestamp}.{ext}
  */
-function deriveFilenameFromBase64(mimeType: string): string {
+export function deriveFilenameFromBase64(mimeType: string): string {
 	const ext = MIME_TO_EXT[mimeType.toLowerCase()] ?? 'png';
 	return `base64-${Date.now()}.${ext}`;
 }
@@ -84,7 +84,7 @@ function deriveFilenameFromBase64(mimeType: string): string {
  * D-13: Local decoding, no network request.
  * D-14: Uses browser-only APIs (atob + Uint8Array), never Node.js Buffer.
  */
-function decodeBase64Image(dataUri: string): { buffer: ArrayBuffer; mimeType: string } {
+export function decodeBase64Image(dataUri: string): { buffer: ArrayBuffer; mimeType: string } {
 	const commaIndex = dataUri.indexOf(',');
 	if (commaIndex === -1) {
 		throw new Error('Invalid data URI format');
