@@ -21,16 +21,20 @@ export default class DownloadImagePlugin extends Plugin {
 
 				const notePath = view.file?.path ?? '';
 
-				// Phase 2: download and save to vault
-				const results = await downloadImages(refs, this.app, notePath);
+				try {
+					// Phase 2: download and save to vault
+					const results = await downloadImages(refs, this.app, notePath);
 
-				const ok = results.filter(r => r.status === 'ok').length;
-				const failed = results.filter(r => r.status === 'failed').length;
+					const ok = results.filter(r => r.status === 'ok').length;
+					const failed = results.filter(r => r.status === 'failed').length;
 
-				// Phase 3 will replace URLs in document; for now log results
-				console.log(`[download-image] Done: ${ok} downloaded, ${failed} failed`);
+					new Notice(`Downloaded ${ok} image(s)${failed > 0 ? `, ${failed} failed` : ''}`);
 
-				// Phase 3: document replacement logic will go here
+					// Phase 3: document replacement logic will go here
+				} catch (err) {
+					console.error('[download-image] Unexpected error:', err);
+					new Notice('Image download failed unexpectedly. Check console for details.');
+				}
 			}
 		});
 
