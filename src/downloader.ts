@@ -237,18 +237,22 @@ export async function downloadImages(
 	for (let i = 0; i < refs.length; i += CONCURRENCY) {
 		const batch = refs.slice(i, i + CONCURRENCY);
 		const settled = await Promise.allSettled(
-			batch.map(ref => downloadOneWithRetry(ref, app, notePath))
+			batch.map(async (ref) => {
+				try {
+					return await downloadOneWithRetry(ref, app, notePath);
+				} catch (e) {
+					// Safety net: should never reach here, but preserve the ref
+					const error = e instanceof Error ? e.message : String(e);
+					return { ref, localPath: '', status: 'failed' as const, error };
+				}
+			})
 		);
 
 		for (const item of settled) {
 			if (item.status === 'fulfilled') {
 				results.push(item.value);
-			} else {
-				// downloadOneWithRetry always resolves, but handle the unexpected case as a safety net
-				const error = item.reason instanceof Error ? item.reason.message : String(item.reason);
-				console.warn('[download-image] Unexpected batch rejection: ' + error);
-				// We cannot reconstruct the ref here, but this branch should never be reached
 			}
+			// 'rejected' branch is now unreachable because inner try/catch always resolves
 		}
 	}
 
