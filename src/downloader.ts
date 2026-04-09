@@ -42,7 +42,7 @@ export const MIME_TO_EXT: Record<string, string> = {
  */
 export function isValidImageContentType(contentType: string | undefined): boolean {
 	if (!contentType) return false;
-	const ct = contentType.toLowerCase();
+	const ct = contentType.toLowerCase().split(';')[0].trim();
 	return ct.startsWith('image/') || ct === 'application/octet-stream';
 }
 
