@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-09T17:00:32.438Z"
-last_activity: 2026-04-09
+last_updated: "2026-04-10T01:05:30.000Z"
+last_activity: 2026-04-10
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # State
@@ -26,16 +26,16 @@ See: .planning/PROJECT.md (updated 2026-04-09)
 
 ## Current Position
 
-Phase: 02 (download-storage) — EXECUTING
+Phase: 02 (download-storage) — COMPLETE
 Plan: 2 of 2
 **Phase:** 02 — Download & Storage
-**Plan:** 02-01 complete, 02-02 next
-**Status:** Executing Phase 02 (plan 1/2 done)
+**Plan:** 02-01 complete, 02-02 complete
+**Status:** Phase 02 complete — all 4 plans done, ready for Phase 03
 **Last activity:** 2026-04-10
 
 **Progress:**
 
-[████████░░] 75%
+[██████████] 100%
 v1.0 Core Plugin
 [          ] Phase 1: Foundation & Parsing
 [          ] Phase 2: Download & Storage
@@ -69,6 +69,8 @@ v1.0 Core Plugin
 | base64 refs skip retry (02-01) | Decode errors are deterministic, not transient — retrying would produce identical failure |
 | Promise.allSettled for batch (02-01) | One image failure must never block others — ERR-01 requirement |
 | Content-Type validation strict (02-01) | Reject text/html redirects before they reach vault — prevents HTML injection (T-02-01) |
+| Export pure helpers for testability (02-02) | Add export keyword to 4 pure functions + MIME_TO_EXT without changing public API |
+| Stub obsidian via vitest alias (02-02) | Pure helpers don't call Obsidian APIs at runtime — minimal stub in resolve.alias isolates tests from runtime |
 
 ### Architecture Flags (from research)
 
