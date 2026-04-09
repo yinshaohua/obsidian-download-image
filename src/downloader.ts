@@ -116,28 +116,35 @@ export function decodeBase64Image(dataUri: string): { buffer: ArrayBuffer; mimeT
  * D-10: Validates response.status === 200 before accessing arrayBuffer.
  */
 async function fetchWithTimeout(url: string): Promise<{ buffer: ArrayBuffer; contentType: string }> {
-	const timeoutPromise = new Promise<never>((_, reject) =>
-		setTimeout(() => reject(new Error('Download timeout: ' + url)), TIMEOUT_MS)
-	);
+	let timerId: ReturnType<typeof setTimeout>;
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		timerId = setTimeout(() => reject(new Error('Download timeout: ' + url)), TIMEOUT_MS);
+	});
 
-	const fetchPromise = (async () => {
-		const response = await requestUrl({ url, method: 'GET' });
+	try {
+		const result = await Promise.race([
+			(async () => {
+				const response = await requestUrl({ url, method: 'GET' });
 
-		// D-10: Check status before accessing body
-		if (response.status !== 200) {
-			throw new Error('HTTP ' + response.status);
-		}
+				// D-10: Check status before accessing body
+				if (response.status !== 200) {
+					throw new Error('HTTP ' + response.status);
+				}
 
-		// D-08: Validate Content-Type
-		const contentType = response.headers['content-type'] ?? '';
-		if (!isValidImageContentType(contentType)) {
-			throw new Error('Non-image Content-Type: ' + contentType);
-		}
+				// D-08: Validate Content-Type
+				const contentType = response.headers['content-type'] ?? '';
+				if (!isValidImageContentType(contentType)) {
+					throw new Error('Non-image Content-Type: ' + contentType);
+				}
 
-		return { buffer: response.arrayBuffer, contentType };
-	})();
-
-	return Promise.race([fetchPromise, timeoutPromise]);
+				return { buffer: response.arrayBuffer, contentType };
+			})(),
+			timeoutPromise,
+		]);
+		return result;
+	} finally {
+		clearTimeout(timerId!);
+	}
 }
 
 /**
