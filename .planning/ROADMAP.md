@@ -43,10 +43,10 @@ Plans:
   3. When one image download fails (404, timeout, non-image response), that image is skipped and the remaining images continue downloading successfully
   4. Network exceptions (timeout, redirect to HTML, HTTP error status) are caught per image and do not crash the plugin or block other downloads
   5. Base64 embedded images are decoded and saved as binary files without making any network request
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 02-01-PLAN.md — Create downloader.ts module with HTTP download, base64 decode, vault storage, and main.ts wiring
+- [x] 02-01-PLAN.md — Create downloader.ts module with HTTP download, base64 decode, vault storage, and main.ts wiring
 - [ ] 02-02-PLAN.md — Unit tests for downloader pure helper functions (filename derivation, Content-Type validation, base64 decode)
 
 ### Phase 3: Document Update & Settings
@@ -69,7 +69,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Parsing | 0/2 | Planned | - |
-| 2. Download & Storage | 0/2 | Planned | - |
+| 2. Download & Storage | 1/2 | In Progress|  |
 | 3. Document Update & Settings | 0/? | Not started | - |
 
 ---
