@@ -56,3 +56,34 @@ export class Notice {
 export class Editor {}
 
 export class MarkdownView {}
+
+export class TAbstractFile {
+	path: string;
+	name: string;
+	constructor(path: string) {
+		this.path = path;
+		this.name = path.split('/').pop() ?? path;
+	}
+}
+
+export class TFile {
+	path: string;
+	name: string;
+	extension: string;
+	stat: { size: number; mtime: number; ctime: number };
+	constructor(path: string, size = 0) {
+		this.path = path;
+		this.name = path.split('/').pop() ?? path;
+		this.extension = path.includes('.') ? path.split('.').pop()! : '';
+		this.stat = { size, mtime: 0, ctime: 0 };
+	}
+}
+
+export class TFolder {
+	path: string;
+	name: string;
+	constructor(path: string) {
+		this.path = path;
+		this.name = path.split('/').pop() ?? path;
+	}
+}
