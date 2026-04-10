@@ -37,19 +37,44 @@ export const MIME_TO_EXT: Record<string, string> = {
 // ──────────────────────────────────────────────
 
 /**
+ * Strips characters that are illegal in filenames on Windows/macOS/Linux.
+ * Windows forbids: * " \ / < > : | ?
+ * Also strips control characters and leading/trailing dots/spaces.
+ */
+function sanitizeFilename(name: string): string {
+	return name
+		.replace(/[*"\\/<>:|?]/g, '')
+		.replace(/[\x00-\x1f]/g, '')
+		.replace(/\s+/g, '-')
+		.replace(/^[.\-]+|[.\-]+$/g, '') || `image-${Date.now()}`;
+}
+
+/**
  * Validates that a Content-Type header indicates an image response.
  * D-08: Accept image/* and application/octet-stream; reject text/html etc.
  */
 export function isValidImageContentType(contentType: string | undefined): boolean {
 	if (!contentType) return false;
-	const ct = contentType.toLowerCase().split(';')[0].trim();
+	const ct = (contentType.toLowerCase().split(';')[0] ?? '').trim();
 	return ct.startsWith('image/') || ct === 'application/octet-stream';
+}
+
+/**
+ * Simple string hash → 6-char base36 identifier.
+ * Deterministic: same URL always produces the same hash.
+ */
+function shortHash(str: string): string {
+	let h = 0;
+	for (let i = 0; i < str.length; i++) {
+		h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+	}
+	return Math.abs(h).toString(36).padStart(6, '0');
 }
 
 /**
  * Derives a filename from a remote URL plus an optional Content-Type hint.
  * D-01: Priority — URL path segment → Content-Type inference → fallback png
- * D-02: CDN hash/UUID segments fall back to image-{timestamp}
+ * D-02: CDN hash/UUID segments fall back to image-{hash}
  */
 export function deriveFilenameFromUrl(url: string, contentType?: string): string {
 	// Strip query string and fragment before extracting path
@@ -58,16 +83,18 @@ export function deriveFilenameFromUrl(url: string, contentType?: string): string
 
 	// If the segment already has a recognisable file extension, use it directly
 	if (pathSegment && /\.\w{2,5}$/.test(pathSegment)) {
-		return pathSegment;
+		return sanitizeFilename(pathSegment);
 	}
 
 	// No valid extension — infer from Content-Type
 	const mimeKey = contentType?.split(';')[0]?.toLowerCase().trim() ?? '';
 	const ext = MIME_TO_EXT[mimeKey] ?? 'png';
 
-	// Short/empty segment (CDN hash, UUID) → timestamp-based name (D-02)
-	const base = pathSegment && pathSegment.length > 2 ? pathSegment : `image-${Date.now()}`;
-	return `${base}.${ext}`;
+	// Use URL hash when segment is short, empty, or purely numeric (e.g. WeChat's "/640")
+	// This ensures each unique URL gets a unique filename, avoiding concurrent write races
+	const isGeneric = !pathSegment || pathSegment.length <= 2 || /^\d+$/.test(pathSegment);
+	const base = isGeneric ? `image-${shortHash(url)}` : pathSegment;
+	return sanitizeFilename(`${base}.${ext}`);
 }
 
 /**
@@ -148,14 +175,108 @@ async function fetchWithTimeout(url: string): Promise<{ buffer: ArrayBuffer; con
 }
 
 /**
- * Saves an ArrayBuffer to the vault using Obsidian's attachment path resolver.
- * D-04: Uses getAvailablePathForAttachment to honour vault settings and avoid duplicates.
+ * Resolves {{DATE:...}} templates in attachment folder paths.
+ * Supports YYYY, MM, DD tokens (used by community plugins like Custom Attachment Location).
+ */
+function resolvePathTemplates(path: string): string {
+	return path.replace(/\{\{DATE:([^}]+)\}\}/gi, (_, format: string) => {
+		const now = new Date();
+		return format
+			.replace('YYYY', String(now.getFullYear()))
+			.replace('YY', String(now.getFullYear()).slice(2))
+			.replace('MM', String(now.getMonth() + 1).padStart(2, '0'))
+			.replace('DD', String(now.getDate()).padStart(2, '0'));
+	});
+}
+
+/**
+ * Ensures all ancestor folders exist for a given vault-relative folder path.
+ */
+async function ensureFolderExists(app: App, folderPath: string): Promise<void> {
+	if (!folderPath) return;
+	const normalized = normalizePath(folderPath);
+	if (app.vault.getAbstractFileByPath(normalized)) return;
+
+	// Create ancestors first
+	const parts = normalized.split('/');
+	let current = '';
+	for (const part of parts) {
+		current = current ? current + '/' + part : part;
+		if (!app.vault.getAbstractFileByPath(current)) {
+			await app.vault.createFolder(current);
+		}
+	}
+}
+
+/**
+ * Returns an available (non-conflicting) vault-relative file path.
+ * Appends " 1", " 2", etc. if the path already exists (mirrors Obsidian behaviour).
+ */
+function deduplicatePath(app: App, basePath: string): string {
+	let candidate = basePath;
+	let counter = 0;
+	while (app.vault.getAbstractFileByPath(candidate)) {
+		counter++;
+		const dotIdx = basePath.lastIndexOf('.');
+		const name = dotIdx > -1 ? basePath.slice(0, dotIdx) : basePath;
+		const ext = dotIdx > -1 ? basePath.slice(dotIdx) : '';
+		candidate = `${name}-${counter}${ext}`;
+	}
+	return candidate;
+}
+
+/**
+ * Saves an ArrayBuffer to the vault.
+ * D-04: Tries getAvailablePathForAttachment first; falls back to manual path
+ *       construction when the vault's attachment folder uses templates like
+ *       {{DATE:YYYY/MM}} that the built-in API cannot resolve.
  * PITFALLS C3: Uses vault.createBinary, never adapter.writeBinary.
  */
 async function saveToVault(app: App, filename: string, notePath: string, buffer: ArrayBuffer): Promise<string> {
-	const attachPath = await app.fileManager.getAvailablePathForAttachment(filename, notePath);
-	const normalized = normalizePath(attachPath);
-	await app.vault.createBinary(normalized, buffer);
+	let targetPath: string;
+
+	try {
+		// Happy path — let Obsidian resolve the attachment location
+		targetPath = await app.fileManager.getAvailablePathForAttachment(filename, notePath);
+	} catch {
+		// Fallback — resolve templates and construct the path ourselves
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const rawFolder: string = (app.vault as any).getConfig?.('attachmentFolderPath') ?? '';
+		const resolved = resolvePathTemplates(rawFolder);
+
+		let folder: string;
+		if (resolved.startsWith('./')) {
+			// Relative to current note's folder
+			const noteFolder = notePath.includes('/') ? notePath.slice(0, notePath.lastIndexOf('/')) : '';
+			folder = noteFolder ? noteFolder + '/' + resolved.slice(2) : resolved.slice(2);
+		} else if (resolved === '.' || resolved === '') {
+			// Same folder as current note
+			folder = notePath.includes('/') ? notePath.slice(0, notePath.lastIndexOf('/')) : '';
+		} else {
+			// Absolute vault path
+			folder = resolved;
+		}
+
+		folder = normalizePath(folder);
+		await ensureFolderExists(app, folder);
+
+		const basePath = normalizePath(folder ? folder + '/' + filename : filename);
+		targetPath = deduplicatePath(app, basePath);
+	}
+
+	const normalized = normalizePath(targetPath);
+	try {
+		await app.vault.createBinary(normalized, buffer);
+	} catch (e) {
+		// Concurrent writes may race on the same filename — retry with next available name
+		const msg = e instanceof Error ? e.message : '';
+		if (msg.includes('already exists')) {
+			const retryPath = deduplicatePath(app, normalized);
+			await app.vault.createBinary(retryPath, buffer);
+			return retryPath;
+		}
+		throw e;
+	}
 	return normalized;
 }
 
@@ -239,12 +360,15 @@ export async function downloadImages(
 ): Promise<DownloadResult[]> {
 	if (refs.length === 0) return [];
 
-	const results: DownloadResult[] = [];
+	// Deduplicate by URL — download each unique URL once, reuse result for all refs sharing it
+	const uniqueUrls = [...new Set(refs.map(r => r.url))];
+	const urlToResult = new Map<string, DownloadResult>();
 
-	for (let i = 0; i < refs.length; i += CONCURRENCY) {
-		const batch = refs.slice(i, i + CONCURRENCY);
+	for (let i = 0; i < uniqueUrls.length; i += CONCURRENCY) {
+		const batch = uniqueUrls.slice(i, i + CONCURRENCY);
+		const batchRefs = batch.map(url => refs.find(r => r.url === url)!);
 		const settled = await Promise.allSettled(
-			batch.map(async (ref) => {
+			batchRefs.map(async (ref) => {
 				try {
 					return await downloadOneWithRetry(ref, app, notePath);
 				} catch (e) {
@@ -255,13 +379,20 @@ export async function downloadImages(
 			})
 		);
 
-		for (const item of settled) {
+		for (let j = 0; j < settled.length; j++) {
+			const item = settled[j]!;
 			if (item.status === 'fulfilled') {
-				results.push(item.value);
+				urlToResult.set(batch[j]!, item.value);
 			}
-			// 'rejected' branch is now unreachable because inner try/catch always resolves
 		}
 	}
 
-	return results;
+	// Map results back to all original refs (duplicates share the same localPath)
+	return refs.map(ref => {
+		const result = urlToResult.get(ref.url);
+		if (result) {
+			return { ref, localPath: result.localPath, status: result.status, error: result.error };
+		}
+		return { ref, localPath: '', status: 'failed' as const, error: 'Download not attempted' };
+	});
 }

@@ -25,10 +25,34 @@ export default class DownloadImagePlugin extends Plugin {
 					// Phase 2: download and save to vault
 					const results = await downloadImages(refs, this.app, notePath);
 
-					const ok = results.filter(r => r.status === 'ok').length;
-					const failed = results.filter(r => r.status === 'failed').length;
+					// Deduplicate by URL for accurate counts
+					const seen = new Set<string>();
+					const uniqueResults: typeof results = [];
+					for (const r of results) {
+						if (!seen.has(r.ref.url)) {
+							seen.add(r.ref.url);
+							uniqueResults.push(r);
+						}
+					}
 
-					new Notice(`Downloaded ${ok} image(s)${failed > 0 ? `, ${failed} failed` : ''}`);
+					const ok = uniqueResults.filter(r => r.status === 'ok').length;
+					const failedResults = uniqueResults.filter(r => r.status === 'failed');
+
+					// Always log summary
+					console.log(`[download-image] ${refs.length} refs found, ${uniqueResults.length} unique URLs, ${ok} ok, ${failedResults.length} failed`);
+					for (const r of uniqueResults) {
+						if (r.status === 'ok') {
+							console.log(`  ✓ ${r.ref.url} → ${r.localPath}`);
+						} else {
+							console.warn(`  ✗ ${r.ref.url}: ${r.error}`);
+						}
+					}
+
+					const dupes = refs.length - uniqueResults.length;
+					new Notice(
+						`Downloaded ${ok} image(s)${failedResults.length > 0 ? `, ${failedResults.length} failed (see console)` : ''}` +
+						(dupes > 0 ? ` (${dupes} duplicate refs skipped)` : '')
+					);
 
 					// Phase 3: document replacement logic will go here
 				} catch (err) {
