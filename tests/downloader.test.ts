@@ -3,6 +3,7 @@ import {
 	isValidImageContentType,
 	deriveFilenameFromUrl,
 	deriveFilenameFromBase64,
+	deriveFilenameWithStrategy,
 	decodeBase64Image,
 	MIME_TO_EXT,
 } from '../src/downloader';
@@ -94,12 +95,12 @@ describe('deriveFilenameFromUrl (D-01, D-02)', () => {
 
 	it('D-02: empty path segment triggers timestamp fallback with correct extension', () => {
 		const filename = deriveFilenameFromUrl('https://example.com/', 'image/webp');
-		expect(filename).toMatch(/^image-\d+\.webp$/);
+		expect(filename).toMatch(/^image-[a-z0-9]+\.webp$/);
 	});
 
-	it('D-02: very short path segment (< 3 chars) triggers timestamp fallback', () => {
+	it('D-02: very short path segment (< 3 chars) triggers hash fallback', () => {
 		const filename = deriveFilenameFromUrl('https://example.com/ab');
-		expect(filename).toMatch(/^image-\d+\./);
+		expect(filename).toMatch(/^image-[a-z0-9]+\./);
 	});
 });
 
@@ -168,5 +169,54 @@ describe('MIME_TO_EXT coverage', () => {
 	it('maps modern formats: image/webp, image/avif', () => {
 		expect(MIME_TO_EXT['image/webp']).toBe('webp');
 		expect(MIME_TO_EXT['image/avif']).toBe('avif');
+	});
+});
+
+describe('deriveFilenameWithStrategy', () => {
+	const smallBuffer = new Uint8Array([1, 2, 3, 4]).buffer;
+	const differentBuffer = new Uint8Array([5, 6, 7, 8]).buffer;
+
+	it('strategy original for HTTP URL returns same as deriveFilenameFromUrl', () => {
+		const url = 'https://example.com/photo.png';
+		const ct = 'image/png';
+		const result = deriveFilenameWithStrategy(url, ct, smallBuffer, 'original', false);
+		const expected = deriveFilenameFromUrl(url, ct);
+		expect(result).toBe(expected);
+	});
+
+	it('strategy original for base64 returns same as deriveFilenameFromBase64', () => {
+		const url = 'data:image/png;base64,abc';
+		const mime = 'image/png';
+		const result = deriveFilenameWithStrategy(url, undefined, smallBuffer, 'original', true, mime);
+		const expected = deriveFilenameFromBase64(mime);
+		expect(result).toBe(expected);
+	});
+
+	it('strategy timestamp produces filename matching YYYYMMDD-HHMMSS prefix pattern', () => {
+		const url = 'https://example.com/photo.png';
+		const result = deriveFilenameWithStrategy(url, 'image/png', smallBuffer, 'timestamp', false);
+		expect(result).toMatch(/^\d{8}-\d{6}-.+/);
+	});
+
+	it('strategy hash produces filename matching 8-char base36 hash with extension', () => {
+		const url = 'https://example.com/photo.png';
+		const result = deriveFilenameWithStrategy(url, 'image/png', smallBuffer, 'hash', false);
+		expect(result).toMatch(/^[a-z0-9]{8}\.\w+$/);
+	});
+
+	it('strategy hash with same content produces same filename (content-addressable)', () => {
+		const buf1 = new Uint8Array([10, 20, 30]).buffer;
+		const buf2 = new Uint8Array([10, 20, 30]).buffer;
+		const url = 'https://example.com/a.png';
+		const r1 = deriveFilenameWithStrategy(url, 'image/png', buf1, 'hash', false);
+		const r2 = deriveFilenameWithStrategy(url, 'image/png', buf2, 'hash', false);
+		expect(r1).toBe(r2);
+	});
+
+	it('strategy hash with different content produces different filename', () => {
+		const url = 'https://example.com/a.png';
+		const r1 = deriveFilenameWithStrategy(url, 'image/png', smallBuffer, 'hash', false);
+		const r2 = deriveFilenameWithStrategy(url, 'image/png', differentBuffer, 'hash', false);
+		expect(r1).not.toBe(r2);
 	});
 });
