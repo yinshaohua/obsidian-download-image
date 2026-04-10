@@ -59,8 +59,11 @@ Plans:
   3. A Notice appears after the command completes showing how many images were downloaded and how many failed
   4. The plugin settings page offers a naming strategy selector (original filename / timestamp / hash) and the chosen strategy is applied when saving images
   5. The plugin settings page offers a concurrency control and the configured value limits simultaneous downloads
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Settings interface, naming strategy, concurrency wiring, document replacement, progress notices
+- [ ] 03-02-PLAN.md — Unit tests for replacer module and naming strategy function
 
 ---
 
@@ -70,7 +73,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation & Parsing | 0/2 | Planned | - |
 | 2. Download & Storage | 2/2 | Complete   | 2026-04-09 |
-| 3. Document Update & Settings | 0/? | Not started | - |
+| 3. Document Update & Settings | 0/2 | Planned | - |
 
 ---
 
