@@ -49,7 +49,9 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. The settings page shows a "Cleanup method" dropdown with "Move to .trash" pre-selected as the default; selecting "Permanent delete" reveals a visible warning before the choice is saved
   2. The settings page shows a "Folder exclusions" text field; paths entered there are excluded from orphan scan results in subsequent scans
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 05-01-PLAN.md — Extend settings interface, defaults, and tab UI with cleanup method dropdown + warning + folder exclusions textarea
 **UI hint**: yes
 
 ### Phase 6: Confirmation Modal
@@ -85,7 +87,7 @@ Plans:
 | 2. Download & Storage | 2/2 | Complete | 2026-04-09 |
 | 3. Document Update & Settings | 2/2 | Complete | 2026-04-10 |
 | 4. Reference Scanner | 2/2 | Complete | 2026-04-10 |
-| 5. Settings Extension | 0/? | Not started | — |
+| 5. Settings Extension | 0/1 | Planning complete | — |
 | 6. Confirmation Modal | 0/? | Not started | — |
 | 7. Pipeline Wiring & Deletion | 0/? | Not started | — |
 
@@ -142,3 +144,4 @@ Plans:
 *Updated: 2026-04-10 — Phase 4 planned: 2 plans (scanner implementation + unit tests)*
 *Updated: 2026-04-10 — 04-01 complete: scanner module + TFile mock implemented (1/2 plans done)*
 *Updated: 2026-04-10 — 04-02 complete: 43-test comprehensive scanner suite, Phase 4 complete (2/2 plans done)*
+*Updated: 2026-04-11 — Phase 5 planned: 1 plan (settings interface + UI extension)*
