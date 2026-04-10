@@ -1,69 +1,76 @@
 # Roadmap: obsidian-download-image
 
-**Milestone:** v1.0 Core Plugin
-**Goal:** One command to localize all images in a document — fully functional, released plugin
-**Granularity:** Coarse (3 phases)
-**Requirements:** 15 v1 requirements
+**Milestone:** v1.1 Clean Unused Attachments
+**Goal:** Scan vault for orphaned attachments, present a confirmation list, and clean them up safely
+**Granularity:** Standard (4 phases)
+**Requirements:** 13 v1.1 requirements (continuing from v1.0 Phase 3)
 
 ---
 
-## Phases
+## v1.0 Phases (Complete)
 
-- [ ] **Phase 1: Foundation & Parsing** - Clean up template boilerplate, register the command skeleton, and implement all image reference parsing (Markdown, Wiki, base64, HTML img)
-- [x] **Phase 2: Download & Storage** - Implement network download via requestUrl, vault file creation, path resolution, duplicate handling, and per-image error isolation (completed 2026-04-09)
-- [ ] **Phase 3: Document Update & Settings** - Wire full pipeline end-to-end, apply URL replacements as single editor transaction, implement settings page, and add user-visible progress notices
+- [x] **Phase 1: Foundation & Parsing** - Clean up template boilerplate, register the command skeleton, and implement all image reference parsing (completed)
+- [x] **Phase 2: Download & Storage** - Implement network download, vault file creation, path resolution, duplicate handling, and per-image error isolation (completed 2026-04-09)
+- [x] **Phase 3: Document Update & Settings** - Wire full pipeline end-to-end, apply URL replacements as single editor transaction, implement settings page, and add user-visible progress notices (completed 2026-04-10)
+
+---
+
+## v1.1 Phases
+
+- [ ] **Phase 4: Reference Scanner** - Pure-logic scanner module that identifies orphaned attachments vault-wide, with full reference detection (resolvedLinks + embeds + HTML img + canvas) and MetadataCache readiness guard
+- [ ] **Phase 5: Settings Extension** - Add cleanup method setting (move to .trash vs. permanent delete) and folder exclusion list to the existing settings interface and tab UI
+- [ ] **Phase 6: Confirmation Modal** - Confirmation dialog that renders the orphan list with per-item deselect checkboxes, Confirm/Cancel actions, and result Notice after cleanup
+- [ ] **Phase 7: Pipeline Wiring & Deletion** - Register vault-wide command palette command, wire scanner output into modal, implement the cleanup callback with vault.trash/vault.delete execution and ENOENT guard
 
 ---
 
 ## Phase Details
 
-### Phase 1: Foundation & Parsing
-**Goal**: The plugin loads cleanly with no template artifacts, registers its command in the palette (available only when a Markdown editor is active), and correctly extracts all image references from any document
-**Depends on**: Nothing (first phase)
-**Requirements**: PARSE-01, PARSE-02, PARSE-03, PARSE-04, UI-01
+### Phase 4: Reference Scanner
+**Goal**: A correct, unit-tested scanner correctly identifies all truly orphaned attachments — never flagging actively-referenced files as orphans
+**Depends on**: Phase 3 (existing codebase stable)
+**Requirements**: SCAN-01, SCAN-03, SCAN-04, SCAN-05 (SCAN-02 dropped)
 **Success Criteria** (what must be TRUE):
-  1. The plugin loads in Obsidian without errors and the "Download images" command appears in the command palette only when a Markdown file is open
-  2. Given a document containing `![alt](https://example.com/img.png?token=abc)`, the parser extracts the URL including query parameters without truncation
-  3. Given `![[https://example.com/img.png]]` Wiki syntax, the parser extracts the URL correctly and separately from Markdown image syntax
-  4. Given a document with an embedded `data:image/png;base64,...` string, the parser identifies it as base64 type (not an HTTP URL to fetch)
-  5. Given `<img src="https://example.com/img.png">` HTML tag, the parser extracts the URL correctly
-**Plans:** 2 plans
+  1. Given a vault where every attachment file is referenced by at least one document, the scanner returns an empty orphan list
+  2. Given a vault with three attachment files where only one is unreferenced by any document (including via embeds, HTML img tags, and canvas nodes), the scanner returns exactly that one file
+  3. When the MetadataCache has not yet resolved after vault load, invoking the scanner either waits for resolution or returns a safe empty result rather than false positives
+  4. The scanner never returns Markdown (.md) or Canvas (.canvas) files — only non-document attachments
+  5. Files inside dot-prefixed directories (.obsidian/, .trash/, .git/, etc.) are never returned as orphans
+**Plans**: TBD
+**UI hint**: no
 
-Plans:
-- [x] 01-01-PLAN.md — Clean boilerplate, update plugin identity, implement parser module, register command
-- [x] 01-02-PLAN.md — Set up Vitest test framework and write comprehensive parser unit tests
-
-### Phase 2: Download & Storage
-**Goal**: Images are downloaded from remote URLs and saved to the correct vault attachment folder, with duplicate filenames handled automatically and individual failures isolated so other images continue processing
-**Depends on**: Phase 1
-**Requirements**: DL-01, DL-02, DL-03, ERR-01, ERR-02
+### Phase 5: Settings Extension
+**Goal**: Users can configure their preferred cleanup method and protect specific folders from the orphan scan before ever running a cleanup
+**Depends on**: Phase 4
+**Requirements**: SET-01, SET-02
 **Success Criteria** (what must be TRUE):
-  1. A remote http/https image URL is fetched using requestUrl and saved as a binary file in the vault's configured attachment folder (respecting Obsidian's Files & Links attachment path setting)
-  2. When two images would produce the same filename, both are saved without overwriting — the second receives a unique name (e.g., image-1.png)
-  3. When one image download fails (404, timeout, non-image response), that image is skipped and the remaining images continue downloading successfully
-  4. Network exceptions (timeout, redirect to HTML, HTTP error status) are caught per image and do not crash the plugin or block other downloads
-  5. Base64 embedded images are decoded and saved as binary files without making any network request
-**Plans:** 2/2 plans complete
+  1. The settings page shows a "Cleanup method" dropdown with "Move to .trash" pre-selected as the default; selecting "Permanent delete" reveals a visible warning before the choice is saved
+  2. The settings page shows a "Folder exclusions" text field; paths entered there are excluded from orphan scan results in subsequent scans
+**Plans**: TBD
+**UI hint**: yes
 
-Plans:
-- [x] 02-01-PLAN.md — Create downloader.ts module with HTTP download, base64 decode, vault storage, and main.ts wiring
-- [x] 02-02-PLAN.md — Unit tests for downloader pure helper functions (filename derivation, Content-Type validation, base64 decode)
-
-### Phase 3: Document Update & Settings
-**Goal**: After download, all successfully saved images have their references replaced in the document as a single undoable action; the user sees a result summary notice; and settings for naming strategy and concurrency are configurable
-**Depends on**: Phase 2
-**Requirements**: DOC-01, DOC-02, UI-02, UI-03, UI-04
+### Phase 6: Confirmation Modal
+**Goal**: Users see exactly what will be deleted and can deselect individual files before any cleanup action is taken
+**Depends on**: Phase 5
+**Requirements**: CLN-01, CLN-02, CLN-03, CLN-04
 **Success Criteria** (what must be TRUE):
-  1. After the command runs, remote image URLs in the document are replaced with local vault paths — the document displays images from local storage
-  2. The entire URL replacement is reversible with a single Ctrl+Z / Cmd+Z undo (one editor transaction)
-  3. A Notice appears after the command completes showing how many images were downloaded and how many failed
-  4. The plugin settings page offers a naming strategy selector (original filename / timestamp / hash) and the chosen strategy is applied when saving images
-  5. The plugin settings page offers a concurrency control and the configured value limits simultaneous downloads
-**Plans:** 2 plans
+  1. After a scan completes, a modal opens listing every orphaned file with its name, vault path, and file size — no cleanup has happened yet at this point
+  2. The user can uncheck individual files in the modal; unchecked files are excluded from the cleanup when Confirm is pressed
+  3. Pressing Cancel closes the modal without deleting or moving any files
+  4. After Confirm is pressed, a Notice appears stating how many files were cleaned up (e.g., "Cleaned 3 attachments")
+**Plans**: TBD
+**UI hint**: yes
 
-Plans:
-- [x] 03-01-PLAN.md — Settings interface, naming strategy, concurrency wiring, document replacement, progress notices
-- [x] 03-02-PLAN.md — Unit tests for replacer module and naming strategy function
+### Phase 7: Pipeline Wiring & Deletion
+**Goal**: Two working command palette commands let users trigger vault-wide and per-document orphan cleanup end-to-end, with files moved to trash (or deleted) safely
+**Depends on**: Phase 6
+**Requirements**: CMD-01 (CMD-02 dropped)
+**Success Criteria** (what must be TRUE):
+  1. The "Clean unused attachments" command appears in the command palette without requiring an open editor, runs the vault-wide scan, and opens the confirmation modal with results
+  2. When the user confirms cleanup with the default setting, each selected file is moved to the Obsidian .trash folder (recoverable) — including on a fresh vault with no pre-existing .trash folder
+  3. When the user confirms cleanup with permanent delete enabled in settings, each selected file is permanently removed from the vault
+**Plans**: TBD
+**UI hint**: no
 
 ---
 
@@ -71,13 +78,19 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Parsing | 0/2 | Planned | - |
-| 2. Download & Storage | 2/2 | Complete   | 2026-04-09 |
-| 3. Document Update & Settings | 1/2 | Executing | - |
+| 1. Foundation & Parsing | 2/2 | Complete | — |
+| 2. Download & Storage | 2/2 | Complete | 2026-04-09 |
+| 3. Document Update & Settings | 2/2 | Complete | 2026-04-10 |
+| 4. Reference Scanner | 0/? | Not started | — |
+| 5. Settings Extension | 0/? | Not started | — |
+| 6. Confirmation Modal | 0/? | Not started | — |
+| 7. Pipeline Wiring & Deletion | 0/? | Not started | — |
 
 ---
 
 ## Coverage Validation
+
+### v1.0 (Complete)
 
 | Requirement | Phase | Category |
 |-------------|-------|----------|
@@ -97,9 +110,29 @@ Plans:
 | UI-03 | Phase 3 | User Interface |
 | UI-04 | Phase 3 | User Interface |
 
-**Coverage: 15/15 requirements mapped**
+**v1.0 Coverage: 15/15 requirements mapped**
+
+### v1.1
+
+| Requirement | Phase | Category |
+|-------------|-------|----------|
+| SCAN-01 | Phase 4 | Scanning |
+| SCAN-02 | — | Dropped |
+| SCAN-03 | Phase 4 | Scanning |
+| SCAN-04 | Phase 4 | Scanning |
+| SCAN-05 | Phase 4 | Scanning |
+| SET-01 | Phase 5 | Settings |
+| SET-02 | Phase 5 | Settings |
+| CLN-01 | Phase 6 | Cleanup |
+| CLN-02 | Phase 6 | Cleanup |
+| CLN-03 | Phase 6 | Cleanup |
+| CLN-04 | Phase 6 | Cleanup |
+| CMD-01 | Phase 7 | Commands |
+| CMD-02 | — | Dropped |
+
+**v1.1 Coverage: 11/13 requirements active (2 dropped: SCAN-02, CMD-02)**
 
 ---
 
-*Roadmap created: 2026-04-09*
-*Milestone: v1.0 Core Plugin*
+*Roadmap created: 2026-04-09 (v1.0)*
+*Updated: 2026-04-10 — v1.1 Clean Unused Attachments phases added (Phase 4-7)*

@@ -27,11 +27,11 @@ One command to localize all images in a document — making notes fully portable
 
 ### Active
 
-- [ ] Command palette command to download all images in current document
-- [ ] Auto-replace document URLs with local paths after download
-- [ ] Show progress/status via Obsidian Notice
-- [ ] Settings page: configurable storage path
-- [ ] Settings page: image naming rules
+- [ ] Scan vault for orphaned attachments not referenced by any document
+- [ ] Scan current document for orphaned attachments it previously referenced
+- [ ] Display orphan list for user confirmation before cleanup
+- [ ] Configurable cleanup method: move to .trash or permanent delete
+- [ ] Result summary via Notice after cleanup
 
 ### Out of Scope
 
@@ -40,19 +40,19 @@ One command to localize all images in a document — making notes fully portable
 - Automatic trigger on paste/open — v1 is manual command only
 - CDN or proxy support — direct download only
 - Image gallery or management UI — not a media manager
+- Automatic cleanup on file delete/rename — v1.1 is manual command only
+- Cleanup scheduling or background scanning — manual trigger only
 
-## Current Milestone: v1.0 Core Plugin
+## Current Milestone: v1.1 Clean Unused Attachments
 
-**Goal:** 构建完整的 Obsidian 图片下载插件，一键将文档中所有远程图片本地化
+**Goal:** 扫描 Vault 中未被任何文档引用的孤立附件，提供列表确认后清理
 
 **Target features:**
-- 命令面板触发，扫描当前文档所有图片引用
-- 解析三种格式：Markdown `![](url)`、Wiki `![[url]]`、base64 嵌入
-- 下载外部图片到 Obsidian 默认附件文件夹
-- 自动替换文档中的 URL 为本地路径
-- 处理重复文件名、显示进度通知
-- 设置页：可配置存储路径和图片命名规则
-- 错误处理：超时、404 等
+- 全 Vault 扫描命令：找出所有未被引用的附件（图片、PDF 等）
+- 当前文档清理命令：找出当前文档曾引用但已删除的孤立附件
+- 扫描后先展示列表，用户确认后再执行清理
+- 清理方式可配置：移到 .trash 或直接删除
+- 结果通知：显示清理了多少文件
 
 ## Context
 
@@ -97,4 +97,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-09 after Phase 2 (Download & Storage) complete*
+*Last updated: 2026-04-10 after milestone v1.1 started*
