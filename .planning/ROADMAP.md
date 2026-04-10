@@ -63,7 +63,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Settings interface, naming strategy, concurrency wiring, document replacement, progress notices
-- [ ] 03-02-PLAN.md — Unit tests for replacer module and naming strategy function
+- [x] 03-02-PLAN.md — Unit tests for replacer module and naming strategy function
 
 ---
 
