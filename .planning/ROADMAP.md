@@ -62,7 +62,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Settings interface, naming strategy, concurrency wiring, document replacement, progress notices
+- [x] 03-01-PLAN.md — Settings interface, naming strategy, concurrency wiring, document replacement, progress notices
 - [ ] 03-02-PLAN.md — Unit tests for replacer module and naming strategy function
 
 ---
@@ -73,7 +73,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation & Parsing | 0/2 | Planned | - |
 | 2. Download & Storage | 2/2 | Complete   | 2026-04-09 |
-| 3. Document Update & Settings | 0/2 | Planned | - |
+| 3. Document Update & Settings | 1/2 | Executing | - |
 
 ---
 

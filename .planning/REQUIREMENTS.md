@@ -22,15 +22,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Document Update
 
-- [ ] **DOC-01**: After download, automatically replace remote URLs with local paths in document
-- [ ] **DOC-02**: Replacement applied as single editor transaction (one undo step)
+- [x] **DOC-01**: After download, automatically replace remote URLs with local paths in document
+- [x] **DOC-02**: Replacement applied as single editor transaction (one undo step)
 
 ### User Interface
 
 - [ ] **UI-01**: Register "Download images" command in command palette, available only when Markdown editor is active
-- [ ] **UI-02**: Show download progress and result summary via Notice
-- [ ] **UI-03**: Settings page: configurable image naming strategy (original / timestamp / hash)
-- [ ] **UI-04**: Settings page: configurable concurrent download count
+- [x] **UI-02**: Show download progress and result summary via Notice
+- [x] **UI-03**: Settings page: configurable image naming strategy (original / timestamp / hash)
+- [x] **UI-04**: Settings page: configurable concurrent download count
 
 ### Error Handling
 
@@ -75,11 +75,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | DL-03 | Phase 2 | Complete |
 | ERR-01 | Phase 2 | Complete |
 | ERR-02 | Phase 2 | Complete |
-| DOC-01 | Phase 3 | Pending |
-| DOC-02 | Phase 3 | Pending |
-| UI-02 | Phase 3 | Pending |
-| UI-03 | Phase 3 | Pending |
-| UI-04 | Phase 3 | Pending |
+| DOC-01 | Phase 3 | Complete |
+| DOC-02 | Phase 3 | Complete |
+| UI-02 | Phase 3 | Complete |
+| UI-03 | Phase 3 | Complete |
+| UI-04 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 15 total
