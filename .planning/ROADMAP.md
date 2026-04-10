@@ -38,7 +38,7 @@
   5. Files inside dot-prefixed directories (.obsidian/, .trash/, .git/, etc.) are never returned as orphans
 **Plans:** 2 plans
 Plans:
-- [ ] 04-01-PLAN.md — Scanner module implementation + mock infrastructure
+- [x] 04-01-PLAN.md — Scanner module implementation + mock infrastructure (complete 2026-04-10)
 - [ ] 04-02-PLAN.md — Comprehensive scanner unit tests
 **UI hint**: no
 
@@ -84,7 +84,7 @@ Plans:
 | 1. Foundation & Parsing | 2/2 | Complete | — |
 | 2. Download & Storage | 2/2 | Complete | 2026-04-09 |
 | 3. Document Update & Settings | 2/2 | Complete | 2026-04-10 |
-| 4. Reference Scanner | 0/2 | Planning | — |
+| 4. Reference Scanner | 1/2 | Executing | — |
 | 5. Settings Extension | 0/? | Not started | — |
 | 6. Confirmation Modal | 0/? | Not started | — |
 | 7. Pipeline Wiring & Deletion | 0/? | Not started | — |
@@ -140,3 +140,4 @@ Plans:
 *Roadmap created: 2026-04-09 (v1.0)*
 *Updated: 2026-04-10 — v1.1 Clean Unused Attachments phases added (Phase 4-7)*
 *Updated: 2026-04-10 — Phase 4 planned: 2 plans (scanner implementation + unit tests)*
+*Updated: 2026-04-10 — 04-01 complete: scanner module + TFile mock implemented (1/2 plans done)*

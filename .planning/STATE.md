@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Phases
-status: planning
-stopped_at: v1.1 roadmap created — Phases 4-7 defined and written to ROADMAP.md
-last_updated: "2026-04-10T12:37:36.623Z"
-last_activity: 2026-04-10 — v1.1 roadmap written (Phases 4-7)
+status: executing
+stopped_at: "04-01 complete — scanner module and TFile mock implemented"
+last_updated: "2026-04-10T15:00:00Z"
+last_activity: 2026-04-10
 progress:
   total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 6
+  percent: 75
 ---
 
 # State
@@ -20,16 +21,18 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** One command to localize all images in a document — making notes fully portable and independent of external image hosts
-**Current focus:** v1.1 Clean Unused Attachments — Phase 4 Reference Scanner
+**Current focus:** Phase 04 — reference-scanner
 
 ---
 
 ## Current Position
 
+Phase: 04 (reference-scanner) — EXECUTING
+Plan: 2 of 2
 **Phase:** 4 — Reference Scanner
-**Plan:** Not started
-**Status:** Roadmap created, ready to plan Phase 4
-**Last activity:** 2026-04-10 — v1.1 roadmap written (Phases 4-7)
+**Plan:** 04-01 complete, 04-02 next
+**Status:** Executing Phase 04
+**Last activity:** 2026-04-10
 
 **Progress bar:** Phase 4 of 7 total (v1.1: 0/4 complete)
 
@@ -81,13 +84,20 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 None
 
+### Phase 4 Decisions (04-01)
+
+| Decision | Rationale |
+|----------|-----------|
+| let ref instead of const in waitForCache | Prevents TDZ error when mock fires callback synchronously before assignment completes |
+| Task 2 mock applied before Task 1 GREEN | TFile constructor required by scanner tests; execution order adjusted, commit order preserved |
+
 ---
 
 ## Session Continuity
 
 **Last session:** 2026-04-10
-**Stopped at:** v1.1 roadmap created — Phases 4-7 defined and written to ROADMAP.md
-**To resume:** Run `/gsd-plan-phase 4` to plan the Reference Scanner phase
+**Stopped at:** 04-01 complete — scanner module and TFile mock implemented
+**To resume:** Run `/gsd-execute-phase 4` to execute plan 04-02 (scanner tests integration)
 
 ---
 
