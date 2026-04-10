@@ -36,7 +36,10 @@
   3. When the MetadataCache has not yet resolved after vault load, invoking the scanner either waits for resolution or returns a safe empty result rather than false positives
   4. The scanner never returns Markdown (.md) or Canvas (.canvas) files — only non-document attachments
   5. Files inside dot-prefixed directories (.obsidian/, .trash/, .git/, etc.) are never returned as orphans
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 04-01-PLAN.md — Scanner module implementation + mock infrastructure
+- [ ] 04-02-PLAN.md — Comprehensive scanner unit tests
 **UI hint**: no
 
 ### Phase 5: Settings Extension
@@ -81,7 +84,7 @@
 | 1. Foundation & Parsing | 2/2 | Complete | — |
 | 2. Download & Storage | 2/2 | Complete | 2026-04-09 |
 | 3. Document Update & Settings | 2/2 | Complete | 2026-04-10 |
-| 4. Reference Scanner | 0/? | Not started | — |
+| 4. Reference Scanner | 0/2 | Planning | — |
 | 5. Settings Extension | 0/? | Not started | — |
 | 6. Confirmation Modal | 0/? | Not started | — |
 | 7. Pipeline Wiring & Deletion | 0/? | Not started | — |
@@ -136,3 +139,4 @@
 
 *Roadmap created: 2026-04-09 (v1.0)*
 *Updated: 2026-04-10 — v1.1 Clean Unused Attachments phases added (Phase 4-7)*
+*Updated: 2026-04-10 — Phase 4 planned: 2 plans (scanner implementation + unit tests)*
