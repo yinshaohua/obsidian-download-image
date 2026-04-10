@@ -41,11 +41,11 @@ Requirements for clean unused attachments milestone. Each maps to roadmap phases
 
 ### Scanning
 
-- [ ] **SCAN-01**: Plugin scans entire vault and identifies all attachment files (images, PDF, etc.) not referenced by any Markdown document
+- [x] **SCAN-01**: Plugin scans entire vault and identifies all attachment files (images, PDF, etc.) not referenced by any Markdown document
 - [~] **SCAN-02**: ~~Plugin scans current document and identifies attachments it previously referenced but no longer references~~ — Dropped (per Phase 4 discussion: only vault-wide scan in v1.1)
-- [ ] **SCAN-03**: Scanner only targets non-Markdown, non-Canvas files (attachment-only scope)
-- [ ] **SCAN-04**: Scanner waits for MetadataCache 'resolved' event before scanning to avoid false positives
-- [ ] **SCAN-05**: Scanner detects references from both `resolvedLinks` and `embeds` (not just links)
+- [x] **SCAN-03**: Scanner only targets non-Markdown, non-Canvas files (attachment-only scope)
+- [x] **SCAN-04**: Scanner waits for MetadataCache 'resolved' event before scanning to avoid false positives
+- [x] **SCAN-05**: Scanner detects references from both `resolvedLinks` and `embeds` (not just links)
 
 ### Cleanup
 

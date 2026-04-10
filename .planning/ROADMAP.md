@@ -17,7 +17,7 @@
 
 ## v1.1 Phases
 
-- [ ] **Phase 4: Reference Scanner** - Pure-logic scanner module that identifies orphaned attachments vault-wide, with full reference detection (resolvedLinks + embeds + HTML img + canvas) and MetadataCache readiness guard
+- [x] **Phase 4: Reference Scanner** - Pure-logic scanner module that identifies orphaned attachments vault-wide, with full reference detection (resolvedLinks + embeds + HTML img + canvas) and MetadataCache readiness guard (completed 2026-04-10)
 - [ ] **Phase 5: Settings Extension** - Add cleanup method setting (move to .trash vs. permanent delete) and folder exclusion list to the existing settings interface and tab UI
 - [ ] **Phase 6: Confirmation Modal** - Confirmation dialog that renders the orphan list with per-item deselect checkboxes, Confirm/Cancel actions, and result Notice after cleanup
 - [ ] **Phase 7: Pipeline Wiring & Deletion** - Register vault-wide command palette command, wire scanner output into modal, implement the cleanup callback with vault.trash/vault.delete execution and ENOENT guard
@@ -39,7 +39,7 @@
 **Plans:** 2 plans
 Plans:
 - [x] 04-01-PLAN.md — Scanner module implementation + mock infrastructure (complete 2026-04-10)
-- [ ] 04-02-PLAN.md — Comprehensive scanner unit tests
+- [x] 04-02-PLAN.md — Comprehensive scanner unit tests (complete 2026-04-10)
 **UI hint**: no
 
 ### Phase 5: Settings Extension
@@ -84,7 +84,7 @@ Plans:
 | 1. Foundation & Parsing | 2/2 | Complete | — |
 | 2. Download & Storage | 2/2 | Complete | 2026-04-09 |
 | 3. Document Update & Settings | 2/2 | Complete | 2026-04-10 |
-| 4. Reference Scanner | 1/2 | Executing | — |
+| 4. Reference Scanner | 2/2 | Complete | 2026-04-10 |
 | 5. Settings Extension | 0/? | Not started | — |
 | 6. Confirmation Modal | 0/? | Not started | — |
 | 7. Pipeline Wiring & Deletion | 0/? | Not started | — |
@@ -141,3 +141,4 @@ Plans:
 *Updated: 2026-04-10 — v1.1 Clean Unused Attachments phases added (Phase 4-7)*
 *Updated: 2026-04-10 — Phase 4 planned: 2 plans (scanner implementation + unit tests)*
 *Updated: 2026-04-10 — 04-01 complete: scanner module + TFile mock implemented (1/2 plans done)*
+*Updated: 2026-04-10 — 04-02 complete: 43-test comprehensive scanner suite, Phase 4 complete (2/2 plans done)*
