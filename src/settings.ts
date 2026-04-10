@@ -1,13 +1,17 @@
 import {App, PluginSettingTab, Setting} from "obsidian";
 import DownloadImagePlugin from "./main";
 
+export type NamingStrategy = 'original' | 'timestamp' | 'hash';
+
 export interface DownloadImageSettings {
-	mySetting: string;
+	namingStrategy: NamingStrategy;
+	concurrency: number;
 }
 
 export const DEFAULT_SETTINGS: DownloadImageSettings = {
-	mySetting: 'default'
-}
+	namingStrategy: 'original',
+	concurrency: 3,
+};
 
 export class DownloadImageSettingTab extends PluginSettingTab {
 	plugin: DownloadImagePlugin;
@@ -19,17 +23,35 @@ export class DownloadImageSettingTab extends PluginSettingTab {
 
 	display(): void {
 		const {containerEl} = this;
-
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Settings #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+			.setName('Image naming strategy')
+			.setDesc(
+				'How downloaded images are named. Original keeps the URL filename; ' +
+				'Timestamp adds a date prefix; Hash uses content-based naming for deduplication.'
+			)
+			.addDropdown(dropdown => dropdown
+				.addOptions({
+					original: 'Original filename',
+					timestamp: 'Timestamp prefix',
+					hash: 'Content hash',
+				})
+				.setValue(this.plugin.settings.namingStrategy)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.namingStrategy = value as NamingStrategy;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Concurrent downloads')
+			.setDesc('Maximum number of simultaneous image downloads (1-10).')
+			.addSlider(slider => slider
+				.setLimits(1, 10, 1)
+				.setValue(this.plugin.settings.concurrency)
+				.setDynamicTooltip()
+				.onChange(async (value) => {
+					this.plugin.settings.concurrency = value;
 					await this.plugin.saveSettings();
 				}));
 	}

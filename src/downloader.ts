@@ -1,5 +1,6 @@
 import { App, requestUrl, normalizePath, Platform } from 'obsidian';
 import { ImageRef } from './parser';
+import { NamingStrategy } from './settings';
 
 // ──────────────────────────────────────────────
 // Types
@@ -16,7 +17,6 @@ export interface DownloadResult {
 // Constants
 // ──────────────────────────────────────────────
 
-const CONCURRENCY = 3;                        // D-11: hardcoded, Phase 3 makes configurable
 const TIMEOUT_MS = 30_000;                    // D-05: 30 second per-image timeout
 const MOBILE_SIZE_LIMIT = 15 * 1024 * 1024;  // D-06: 15MB mobile limit
 
@@ -104,6 +104,53 @@ export function deriveFilenameFromUrl(url: string, contentType?: string): string
 export function deriveFilenameFromBase64(mimeType: string): string {
 	const ext = MIME_TO_EXT[mimeType.toLowerCase()] ?? 'png';
 	return `base64-${Date.now()}.${ext}`;
+}
+
+/**
+ * Derives a filename using the specified naming strategy.
+ * Wraps deriveFilenameFromUrl/deriveFilenameFromBase64 with timestamp and hash alternatives.
+ */
+export function deriveFilenameWithStrategy(
+	url: string,
+	contentType: string | undefined,
+	buffer: ArrayBuffer,
+	strategy: NamingStrategy,
+	isBase64: boolean,
+	mimeType?: string
+): string {
+	switch (strategy) {
+		case 'timestamp': {
+			const now = new Date();
+			const ts = now.getFullYear().toString()
+				+ String(now.getMonth() + 1).padStart(2, '0')
+				+ String(now.getDate()).padStart(2, '0')
+				+ '-'
+				+ String(now.getHours()).padStart(2, '0')
+				+ String(now.getMinutes()).padStart(2, '0')
+				+ String(now.getSeconds()).padStart(2, '0');
+			const base = isBase64
+				? deriveFilenameFromBase64(mimeType ?? 'image/png')
+				: deriveFilenameFromUrl(url, contentType);
+			return ts + '-' + base;
+		}
+		case 'hash': {
+			let h = 0;
+			const view = new Uint8Array(buffer);
+			for (let i = 0; i < view.length; i++) {
+				h = ((h << 5) - h + view[i]!) | 0;
+			}
+			const hashStr = Math.abs(h).toString(36).padStart(8, '0');
+			const ext = isBase64
+				? (MIME_TO_EXT[(mimeType ?? '').toLowerCase()] ?? 'png')
+				: (MIME_TO_EXT[(contentType?.split(';')[0]?.toLowerCase().trim()) ?? ''] ?? 'png');
+			return hashStr + '.' + ext;
+		}
+		case 'original':
+		default:
+			return isBase64
+				? deriveFilenameFromBase64(mimeType ?? 'image/png')
+				: deriveFilenameFromUrl(url, contentType);
+	}
 }
 
 /**
@@ -284,7 +331,7 @@ async function saveToVault(app: App, filename: string, notePath: string, buffer:
  * Processes a single ImageRef: handles both base64 and HTTP/wiki image types.
  * D-06: Enforces 15MB mobile size limit on the decoded/downloaded buffer.
  */
-async function processOneRef(ref: ImageRef, app: App, notePath: string): Promise<DownloadResult> {
+async function processOneRef(ref: ImageRef, app: App, notePath: string, namingStrategy: NamingStrategy): Promise<DownloadResult> {
 	if (ref.type === 'base64') {
 		// D-13/D-14: Local decoding, browser-only APIs
 		const { buffer, mimeType } = decodeBase64Image(ref.url);
@@ -296,7 +343,7 @@ async function processOneRef(ref: ImageRef, app: App, notePath: string): Promise
 			);
 		}
 
-		const filename = deriveFilenameFromBase64(mimeType);
+		const filename = deriveFilenameWithStrategy(ref.url, undefined, buffer, namingStrategy, true, mimeType);
 		const localPath = await saveToVault(app, filename, notePath, buffer);
 		return { ref, localPath, status: 'ok' };
 	}
@@ -311,7 +358,7 @@ async function processOneRef(ref: ImageRef, app: App, notePath: string): Promise
 		);
 	}
 
-	const filename = deriveFilenameFromUrl(ref.url, contentType);
+	const filename = deriveFilenameWithStrategy(ref.url, contentType, buffer, namingStrategy, false);
 	const localPath = await saveToVault(app, filename, notePath, buffer);
 	return { ref, localPath, status: 'ok' };
 }
@@ -321,9 +368,9 @@ async function processOneRef(ref: ImageRef, app: App, notePath: string): Promise
  * D-09: Retry once for HTTP/wiki; base64 never retries (no network involved).
  * ERR-01: Always resolves — never rejects — so one failure cannot block others.
  */
-async function downloadOneWithRetry(ref: ImageRef, app: App, notePath: string): Promise<DownloadResult> {
+async function downloadOneWithRetry(ref: ImageRef, app: App, notePath: string, namingStrategy: NamingStrategy): Promise<DownloadResult> {
 	try {
-		return await processOneRef(ref, app, notePath);
+		return await processOneRef(ref, app, notePath, namingStrategy);
 	} catch (e1) {
 		// D-09: base64 decode failures are not network errors — do not retry
 		if (ref.type === 'base64') {
@@ -334,7 +381,7 @@ async function downloadOneWithRetry(ref: ImageRef, app: App, notePath: string): 
 
 		// Retry once for HTTP/wiki
 		try {
-			return await processOneRef(ref, app, notePath);
+			return await processOneRef(ref, app, notePath, namingStrategy);
 		} catch (e2) {
 			const error = e2 instanceof Error ? e2.message : String(e2);
 			console.warn('[download-image] Skipped ' + ref.url + ': ' + error);
@@ -347,30 +394,41 @@ async function downloadOneWithRetry(ref: ImageRef, app: App, notePath: string): 
 // Public API
 // ──────────────────────────────────────────────
 
+export interface DownloadOptions {
+	concurrency: number;
+	namingStrategy: NamingStrategy;
+	onProgress?: (completed: number, total: number) => void;
+}
+
 /**
  * Downloads all image references and returns results for each.
- * D-11: Processes in batches of CONCURRENCY (3) to avoid overwhelming the network.
+ * Processes in batches of options.concurrency to avoid overwhelming the network.
  * D-12: Returns DownloadResult[] — ok entries have localPath, failed entries have error.
  * ERR-01: Uses Promise.allSettled so one rejection never blocks the batch.
  */
 export async function downloadImages(
 	refs: ImageRef[],
 	app: App,
-	notePath: string
+	notePath: string,
+	options?: DownloadOptions
 ): Promise<DownloadResult[]> {
 	if (refs.length === 0) return [];
+
+	const concurrency = options?.concurrency ?? 3;
+	const namingStrategy = options?.namingStrategy ?? 'original';
 
 	// Deduplicate by URL — download each unique URL once, reuse result for all refs sharing it
 	const uniqueUrls = [...new Set(refs.map(r => r.url))];
 	const urlToResult = new Map<string, DownloadResult>();
+	let completedSoFar = 0;
 
-	for (let i = 0; i < uniqueUrls.length; i += CONCURRENCY) {
-		const batch = uniqueUrls.slice(i, i + CONCURRENCY);
+	for (let i = 0; i < uniqueUrls.length; i += concurrency) {
+		const batch = uniqueUrls.slice(i, i + concurrency);
 		const batchRefs = batch.map(url => refs.find(r => r.url === url)!);
 		const settled = await Promise.allSettled(
 			batchRefs.map(async (ref) => {
 				try {
-					return await downloadOneWithRetry(ref, app, notePath);
+					return await downloadOneWithRetry(ref, app, notePath, namingStrategy);
 				} catch (e) {
 					// Safety net: should never reach here, but preserve the ref
 					const error = e instanceof Error ? e.message : String(e);
@@ -385,6 +443,9 @@ export async function downloadImages(
 				urlToResult.set(batch[j]!, item.value);
 			}
 		}
+
+		completedSoFar += batch.length;
+		options?.onProgress?.(completedSoFar, uniqueUrls.length);
 	}
 
 	// Map results back to all original refs (duplicates share the same localPath)
