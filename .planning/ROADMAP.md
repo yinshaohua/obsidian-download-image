@@ -18,7 +18,7 @@
 ## v1.1 Phases
 
 - [x] **Phase 4: Reference Scanner** - Pure-logic scanner module that identifies orphaned attachments vault-wide, with full reference detection (resolvedLinks + embeds + HTML img + canvas) and MetadataCache readiness guard (completed 2026-04-10)
-- [ ] **Phase 5: Settings Extension** - Add cleanup method setting (move to .trash vs. permanent delete) and folder exclusion list to the existing settings interface and tab UI
+- [x] **Phase 5: Settings Extension** - Add cleanup method setting (move to .trash vs. permanent delete) and folder exclusion list to the existing settings interface and tab UI (completed 2026-04-11)
 - [ ] **Phase 6: Confirmation Modal** - Confirmation dialog that renders the orphan list with per-item deselect checkboxes, Confirm/Cancel actions, and result Notice after cleanup
 - [ ] **Phase 7: Pipeline Wiring & Deletion** - Register vault-wide command palette command, wire scanner output into modal, implement the cleanup callback with vault.trash/vault.delete execution and ENOENT guard
 
@@ -63,7 +63,9 @@ Plans:
   2. The user can uncheck individual files in the modal; unchecked files are excluded from the cleanup when Confirm is pressed
   3. Pressing Cancel closes the modal without deleting or moving any files
   4. After Confirm is pressed, a Notice appears stating how many files were cleaned up (e.g., "Cleaned 3 attachments")
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 06-01-PLAN.md — CleanupModal class with Promise-wrapped async API, checkbox list, and obsidian mock extension
 **UI hint**: yes
 
 ### Phase 7: Pipeline Wiring & Deletion
@@ -87,8 +89,8 @@ Plans:
 | 2. Download & Storage | 2/2 | Complete | 2026-04-09 |
 | 3. Document Update & Settings | 2/2 | Complete | 2026-04-10 |
 | 4. Reference Scanner | 2/2 | Complete | 2026-04-10 |
-| 5. Settings Extension | 0/1 | Planning complete | — |
-| 6. Confirmation Modal | 0/? | Not started | — |
+| 5. Settings Extension | 1/1 | Complete | 2026-04-11 |
+| 6. Confirmation Modal | 0/1 | Planning complete | — |
 | 7. Pipeline Wiring & Deletion | 0/? | Not started | — |
 
 ---
@@ -145,3 +147,5 @@ Plans:
 *Updated: 2026-04-10 — 04-01 complete: scanner module + TFile mock implemented (1/2 plans done)*
 *Updated: 2026-04-10 — 04-02 complete: 43-test comprehensive scanner suite, Phase 4 complete (2/2 plans done)*
 *Updated: 2026-04-11 — Phase 5 planned: 1 plan (settings interface + UI extension)*
+*Updated: 2026-04-11 — 05-01 complete: settings extension with cleanup method + folder exclusions, Phase 5 complete (1/1 plans done)*
+*Updated: 2026-04-11 — Phase 6 planned: 1 plan (CleanupModal + showCleanupModal + mock extension)*
