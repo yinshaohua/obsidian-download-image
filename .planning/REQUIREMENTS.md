@@ -56,8 +56,8 @@ Requirements for clean unused attachments milestone. Each maps to roadmap phases
 
 ### Settings
 
-- [ ] **SET-01**: Cleanup method setting: "Move to .trash" (default) or "Permanent delete"
-- [ ] **SET-02**: Folder exclusion list: comma-separated paths excluded from orphan scanning
+- [x] **SET-01**: Cleanup method setting: "Move to .trash" (default) or "Permanent delete"
+- [x] **SET-02**: Folder exclusion list: comma-separated paths excluded from orphan scanning
 
 ### Commands
 
@@ -119,8 +119,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | SCAN-03 | Phase 4 | Pending |
 | SCAN-04 | Phase 4 | Pending |
 | SCAN-05 | Phase 4 | Pending |
-| SET-01 | Phase 5 | Pending |
-| SET-02 | Phase 5 | Pending |
+| SET-01 | Phase 5 | Complete |
+| SET-02 | Phase 5 | Complete |
 | CLN-01 | Phase 6 | Pending |
 | CLN-02 | Phase 6 | Pending |
 | CLN-03 | Phase 6 | Pending |

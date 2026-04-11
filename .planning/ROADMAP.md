@@ -51,7 +51,7 @@ Plans:
   2. The settings page shows a "Folder exclusions" text field; paths entered there are excluded from orphan scan results in subsequent scans
 **Plans:** 1 plan
 Plans:
-- [ ] 05-01-PLAN.md — Extend settings interface, defaults, and tab UI with cleanup method dropdown + warning + folder exclusions textarea
+- [x] 05-01-PLAN.md — Extend settings interface, defaults, and tab UI with cleanup method dropdown + warning + folder exclusions textarea
 **UI hint**: yes
 
 ### Phase 6: Confirmation Modal
