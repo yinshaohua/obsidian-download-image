@@ -45,6 +45,7 @@ export class Setting {
 	addDropdown(_cb: unknown) { return this; }
 	addSlider(_cb: unknown) { return this; }
 	addText(_cb: unknown) { return this; }
+	addTextArea(_cb: unknown) { return this; }
 }
 
 export class Notice {
