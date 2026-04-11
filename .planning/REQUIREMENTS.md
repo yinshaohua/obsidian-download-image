@@ -61,7 +61,7 @@ Requirements for clean unused attachments milestone. Each maps to roadmap phases
 
 ### Commands
 
-- [ ] **CMD-01**: "Clean unused attachments" command in command palette — vault-wide scan (uses `callback`, no editor required)
+- [x] **CMD-01**: "Clean unused attachments" command in command palette — vault-wide scan (uses `callback`, no editor required)
 - [~] **CMD-02**: ~~"Clean unused attachments in current note" command — per-document scan (uses `editorCallback`)~~ — Dropped (per Phase 4 discussion: only vault-wide scan in v1.1)
 
 ## v2 Requirements
@@ -114,18 +114,18 @@ Deferred to future release. Tracked but not in current roadmap.
 | UI-02 | Phase 3 | Complete |
 | UI-03 | Phase 3 | Complete |
 | UI-04 | Phase 3 | Complete |
-| SCAN-01 | Phase 4 | Pending |
+| SCAN-01 | Phase 4 | Complete |
 | SCAN-02 | — | Dropped |
-| SCAN-03 | Phase 4 | Pending |
-| SCAN-04 | Phase 4 | Pending |
-| SCAN-05 | Phase 4 | Pending |
+| SCAN-03 | Phase 4 | Complete |
+| SCAN-04 | Phase 4 | Complete |
+| SCAN-05 | Phase 4 | Complete |
 | SET-01 | Phase 5 | Complete |
 | SET-02 | Phase 5 | Complete |
 | CLN-01 | Phase 6 | Complete |
 | CLN-02 | Phase 6 | Complete |
 | CLN-03 | Phase 6 | Complete |
 | CLN-04 | Phase 6 | Complete |
-| CMD-01 | Phase 7 | Pending |
+| CMD-01 | Phase 7 | Complete |
 | CMD-02 | — | Dropped |
 
 **Coverage:**

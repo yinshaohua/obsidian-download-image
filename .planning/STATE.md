@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Phases
-status: verifying
-stopped_at: Completed 06-01-PLAN.md — confirmation modal with CleanupModal and showCleanupModal
-last_updated: "2026-04-11T06:05:15.535Z"
+status: complete
+stopped_at: Completed 07-01-PLAN.md — pipeline wiring with executeCleanup and cleanup command
+last_updated: "2026-04-11T06:43:38Z"
 last_activity: 2026-04-11
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 10
-  completed_plans: 10
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** One command to localize all images in a document — making notes fully portable and independent of external image hosts
-**Current focus:** Phase 05 — settings-extension (COMPLETE)
+**Current focus:** Phase 07 — pipeline-wiring-deletion (COMPLETE) -- ALL PHASES DONE
 
 ---
 
 ## Current Position
 
-Phase: 05 (settings-extension) — COMPLETE
+Phase: 07 (pipeline-wiring-deletion) — COMPLETE
 Plan: 1 of 1
-**Phase:** 05
+**Phase:** 07
 **Plan:** 1 of 1 complete
-**Status:** Phase complete — ready for verification
+**Status:** All phases complete
 **Last activity:** 2026-04-11
 
-**Progress bar:** Phase 5 of 7 total (v1.1: 3/4 complete)
+**Progress bar:** Phase 7 of 7 total (v1.1: 4/4 complete) -- 100%
 
 ---
 
@@ -62,6 +62,8 @@ Plan: 1 of 1
 | Settings before modal (Phase 5) | Establishes cleanupMethod type contract consumed by modal and main.ts |
 | Modal before wiring (Phase 6) | Can be developed and visually tested with mock TFile[] before full pipeline exists |
 | Integration last (Phase 7) | Classic leaf-to-orchestrator order — consistent with v1.0 build pattern |
+| Extracted executeCleanup for testability (07-01) | Exported function allows direct unit testing without capturing addCommand callbacks |
+| vi.mock obsidian with class extension (07-01) | MockNotice subclass tracks constructor calls while remaining new-compatible |
 
 ### Architecture Flags (from research)
 
@@ -97,8 +99,8 @@ None
 
 ## Session Continuity
 
-**Last session:** 2026-04-11T06:05:15.521Z
-**Stopped at:** Completed 06-01-PLAN.md — confirmation modal with CleanupModal and showCleanupModal
+**Last session:** 2026-04-11T06:43:38Z
+**Stopped at:** Completed 07-01-PLAN.md — pipeline wiring with executeCleanup and cleanup command. All phases complete.
 
 ---
 

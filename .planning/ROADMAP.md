@@ -19,8 +19,8 @@
 
 - [x] **Phase 4: Reference Scanner** - Pure-logic scanner module that identifies orphaned attachments vault-wide, with full reference detection (resolvedLinks + embeds + HTML img + canvas) and MetadataCache readiness guard (completed 2026-04-10)
 - [x] **Phase 5: Settings Extension** - Add cleanup method setting (move to .trash vs. permanent delete) and folder exclusion list to the existing settings interface and tab UI (completed 2026-04-11)
-- [ ] **Phase 6: Confirmation Modal** - Confirmation dialog that renders the orphan list with per-item deselect checkboxes, Confirm/Cancel actions, and result Notice after cleanup
-- [ ] **Phase 7: Pipeline Wiring & Deletion** - Register vault-wide command palette command, wire scanner output into modal, implement the cleanup callback with vault.trash/vault.delete execution and ENOENT guard
+- [x] **Phase 6: Confirmation Modal** - Confirmation dialog that renders the orphan list with per-item deselect checkboxes, Confirm/Cancel actions, and result Notice after cleanup (completed 2026-04-11)
+- [x] **Phase 7: Pipeline Wiring & Deletion** - Register vault-wide command palette command, wire scanner output into modal, implement the cleanup callback with vault.trash/vault.delete execution and ENOENT guard (completed 2026-04-11)
 
 ---
 
@@ -78,7 +78,7 @@ Plans:
   3. When the user confirms cleanup with permanent delete enabled in settings, each selected file is permanently removed from the vault
 **Plans:** 1 plan
 Plans:
-- [ ] 07-01-PLAN.md — Register cleanup command, wire scan-modal-delete pipeline with ENOENT guard and error resilience
+- [x] 07-01-PLAN.md — Register cleanup command, wire scan-modal-delete pipeline with ENOENT guard and error resilience (complete 2026-04-11)
 **UI hint**: no
 
 ---
@@ -92,8 +92,8 @@ Plans:
 | 3. Document Update & Settings | 2/2 | Complete | 2026-04-10 |
 | 4. Reference Scanner | 2/2 | Complete | 2026-04-10 |
 | 5. Settings Extension | 1/1 | Complete | 2026-04-11 |
-| 6. Confirmation Modal | 0/1 | Planning complete | — |
-| 7. Pipeline Wiring & Deletion | 0/1 | Planning complete | — |
+| 6. Confirmation Modal | 1/1 | Complete | 2026-04-11 |
+| 7. Pipeline Wiring & Deletion | 1/1 | Complete | 2026-04-11 |
 
 ---
 
@@ -152,3 +152,4 @@ Plans:
 *Updated: 2026-04-11 — 05-01 complete: settings extension with cleanup method + folder exclusions, Phase 5 complete (1/1 plans done)*
 *Updated: 2026-04-11 — Phase 6 planned: 1 plan (CleanupModal + showCleanupModal + mock extension)*
 *Updated: 2026-04-11 — Phase 7 planned: 1 plan (cleanup command + scan-modal-delete pipeline wiring)*
+*Updated: 2026-04-11 — 07-01 complete: cleanup command + executeCleanup pipeline, Phase 7 complete (1/1 plans done). All v1.1 phases complete.*
