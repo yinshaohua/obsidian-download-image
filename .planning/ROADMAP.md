@@ -65,7 +65,7 @@ Plans:
   4. After Confirm is pressed, a Notice appears stating how many files were cleaned up (e.g., "Cleaned 3 attachments")
 **Plans:** 1 plan
 Plans:
-- [ ] 06-01-PLAN.md — CleanupModal class with Promise-wrapped async API, checkbox list, and obsidian mock extension
+- [x] 06-01-PLAN.md — CleanupModal class with Promise-wrapped async API, checkbox list, and obsidian mock extension
 **UI hint**: yes
 
 ### Phase 7: Pipeline Wiring & Deletion

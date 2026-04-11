@@ -49,10 +49,10 @@ Requirements for clean unused attachments milestone. Each maps to roadmap phases
 
 ### Cleanup
 
-- [ ] **CLN-01**: Preview modal displays list of orphaned files with paths and sizes; user can deselect individual files before confirming
-- [ ] **CLN-02**: Default cleanup moves files to Obsidian .trash folder (recoverable)
-- [ ] **CLN-03**: Settings option to switch to permanent delete (explicit opt-in, never default)
-- [ ] **CLN-04**: Result Notice shows count of cleaned files after operation completes
+- [x] **CLN-01**: Preview modal displays list of orphaned files with paths and sizes; user can deselect individual files before confirming
+- [x] **CLN-02**: Default cleanup moves files to Obsidian .trash folder (recoverable)
+- [x] **CLN-03**: Settings option to switch to permanent delete (explicit opt-in, never default)
+- [x] **CLN-04**: Result Notice shows count of cleaned files after operation completes
 
 ### Settings
 
@@ -121,10 +121,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | SCAN-05 | Phase 4 | Pending |
 | SET-01 | Phase 5 | Complete |
 | SET-02 | Phase 5 | Complete |
-| CLN-01 | Phase 6 | Pending |
-| CLN-02 | Phase 6 | Pending |
-| CLN-03 | Phase 6 | Pending |
-| CLN-04 | Phase 6 | Pending |
+| CLN-01 | Phase 6 | Complete |
+| CLN-02 | Phase 6 | Complete |
+| CLN-03 | Phase 6 | Complete |
+| CLN-04 | Phase 6 | Complete |
 | CMD-01 | Phase 7 | Pending |
 | CMD-02 | — | Dropped |
 
