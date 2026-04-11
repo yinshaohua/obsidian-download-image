@@ -76,7 +76,9 @@ Plans:
   1. The "Clean unused attachments" command appears in the command palette without requiring an open editor, runs the vault-wide scan, and opens the confirmation modal with results
   2. When the user confirms cleanup with the default setting, each selected file is moved to the Obsidian .trash folder (recoverable) — including on a fresh vault with no pre-existing .trash folder
   3. When the user confirms cleanup with permanent delete enabled in settings, each selected file is permanently removed from the vault
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 07-01-PLAN.md — Register cleanup command, wire scan-modal-delete pipeline with ENOENT guard and error resilience
 **UI hint**: no
 
 ---
@@ -91,7 +93,7 @@ Plans:
 | 4. Reference Scanner | 2/2 | Complete | 2026-04-10 |
 | 5. Settings Extension | 1/1 | Complete | 2026-04-11 |
 | 6. Confirmation Modal | 0/1 | Planning complete | — |
-| 7. Pipeline Wiring & Deletion | 0/? | Not started | — |
+| 7. Pipeline Wiring & Deletion | 0/1 | Planning complete | — |
 
 ---
 
@@ -149,3 +151,4 @@ Plans:
 *Updated: 2026-04-11 — Phase 5 planned: 1 plan (settings interface + UI extension)*
 *Updated: 2026-04-11 — 05-01 complete: settings extension with cleanup method + folder exclusions, Phase 5 complete (1/1 plans done)*
 *Updated: 2026-04-11 — Phase 6 planned: 1 plan (CleanupModal + showCleanupModal + mock extension)*
+*Updated: 2026-04-11 — Phase 7 planned: 1 plan (cleanup command + scan-modal-delete pipeline wiring)*
