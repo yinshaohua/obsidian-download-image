@@ -46,12 +46,26 @@ export class Setting {
 	addSlider(_cb: unknown) { return this; }
 	addText(_cb: unknown) { return this; }
 	addTextArea(_cb: unknown) { return this; }
+	addButton(_cb: unknown) { return this; }
 }
 
 export class Notice {
 	constructor(_message: string, _duration?: number) {}
 	setMessage(_msg: string): void {}
 	hide(): void {}
+}
+
+export class Modal {
+	app: unknown;
+	contentEl: HTMLElement;
+	constructor(app: unknown) {
+		this.app = app;
+		this.contentEl = document.createElement('div');
+	}
+	open(): void { this.onOpen(); }
+	close(): void { this.onClose(); }
+	onOpen(): void {}
+	onClose(): void {}
 }
 
 export class Editor {}
