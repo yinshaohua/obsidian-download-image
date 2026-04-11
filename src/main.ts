@@ -1,8 +1,70 @@
-import {Editor, MarkdownView, Notice, Plugin} from 'obsidian';
+import {App, Editor, MarkdownView, Notice, Plugin} from 'obsidian';
 import {DownloadImageSettings, DEFAULT_SETTINGS, DownloadImageSettingTab} from "./settings";
 import {extractImages} from "./parser";
 import {downloadImages} from "./downloader";
 import {buildReplacementMap, applyReplacements} from "./replacer";
+import {scanOrphanedAttachments} from "./scanner";
+import {showCleanupModal} from "./modal";
+
+/**
+ * Extracted cleanup pipeline for testability (D-03).
+ * Runs scan -> modal -> delete with ENOENT guard and error resilience.
+ */
+export async function executeCleanup(
+	app: App,
+	settings: DownloadImageSettings
+): Promise<void> {
+	const orphans = await scanOrphanedAttachments(app, settings.excludedFolders);
+	const selected = await showCleanupModal(app, orphans);
+
+	if (selected === null) {
+		return;
+	}
+
+	// ENOENT guard: pre-create .trash folder if missing (D-07)
+	if (settings.cleanupMethod === 'trash') {
+		const trashFolder = app.vault.getAbstractFileByPath('.trash');
+		if (!trashFolder) {
+			await app.vault.createFolder('.trash');
+		}
+	}
+
+	// Progress Notice (D-12, D-13)
+	const progressNotice = new Notice('Cleaning up...', 0);
+
+	let successCount = 0;
+	let failCount = 0;
+
+	try {
+		for (const file of selected) {
+			try {
+				if (settings.cleanupMethod === 'trash') {
+					await app.vault.trash(file, false);
+				} else {
+					await app.vault.delete(file);
+				}
+				successCount++;
+			} catch (err) {
+				failCount++;
+				console.error(`[download-image] Failed to remove ${file.path}:`, err instanceof Error ? err.message : String(err));
+			}
+		}
+
+		// Hide progress, show result Notice (D-10)
+		progressNotice.hide();
+		if (failCount === 0) {
+			new Notice(`Cleaned ${successCount} attachments`);
+		} else if (successCount > 0) {
+			new Notice(`Cleaned ${successCount} attachments, ${failCount} failed (see console)`);
+		} else {
+			new Notice(`Cleanup failed: ${failCount} files could not be removed (see console)`);
+		}
+	} catch (err) {
+		progressNotice.hide();
+		console.error('[download-image] Unexpected cleanup error:', err);
+		new Notice('Cleanup failed unexpectedly. Check console for details.');
+	}
+}
 
 export default class DownloadImagePlugin extends Plugin {
 	settings: DownloadImageSettings;
@@ -90,6 +152,14 @@ export default class DownloadImagePlugin extends Plugin {
 					console.error('[download-image] Unexpected error:', err);
 					new Notice('Image download failed unexpectedly. Check console for details.');
 				}
+			}
+		});
+
+		this.addCommand({
+			id: 'clean-unused-attachments',
+			name: 'Clean unused attachments',
+			callback: async () => {
+				await executeCleanup(this.app, this.settings);
 			}
 		});
 

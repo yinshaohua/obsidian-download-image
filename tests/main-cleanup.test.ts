@@ -1,5 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { TFile, Notice } from 'obsidian';
+import { TFile } from 'obsidian';
+
+// Track Notice constructor calls
+const noticeMessages: string[] = [];
+
+// Mock obsidian module to intercept Notice constructor
+vi.mock('obsidian', async () => {
+  const actual = await vi.importActual<typeof import('obsidian')>('obsidian');
+  return {
+    ...actual,
+    Notice: class MockNotice extends actual.Notice {
+      constructor(msg: string, duration?: number) {
+        super(msg, duration);
+        noticeMessages.push(msg);
+      }
+    },
+  };
+});
 
 // Mock scanner and modal modules
 vi.mock('../src/scanner', () => ({
@@ -53,6 +70,7 @@ describe('executeCleanup', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    noticeMessages.length = 0;
   });
 
   describe('scan and modal wiring', () => {
@@ -209,15 +227,9 @@ describe('executeCleanup', () => {
       mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
       mockModal.mockResolvedValue([file1, file2]);
 
-      const notices: string[] = [];
-      const NoticeSpy = vi.spyOn(await import('obsidian'), 'Notice').mockImplementation(
-        ((msg: string) => { notices.push(msg); return { hide: vi.fn(), setMessage: vi.fn() }; }) as any
-      );
-
       await executeCleanup(app as any, settings);
 
-      expect(notices).toContain('Cleaned 2 attachments');
-      NoticeSpy.mockRestore();
+      expect(noticeMessages).toContain('Cleaned 2 attachments');
     });
 
     it('shows partial failure message', async () => {
@@ -231,15 +243,9 @@ describe('executeCleanup', () => {
       mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
       mockModal.mockResolvedValue([file1, file2]);
 
-      const notices: string[] = [];
-      const NoticeSpy = vi.spyOn(await import('obsidian'), 'Notice').mockImplementation(
-        ((msg: string) => { notices.push(msg); return { hide: vi.fn(), setMessage: vi.fn() }; }) as any
-      );
-
       await executeCleanup(app as any, settings);
 
-      expect(notices).toContain('Cleaned 1 attachments, 1 failed (see console)');
-      NoticeSpy.mockRestore();
+      expect(noticeMessages).toContain('Cleaned 1 attachments, 1 failed (see console)');
     });
 
     it('shows all-failed message', async () => {
@@ -251,15 +257,9 @@ describe('executeCleanup', () => {
       mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
       mockModal.mockResolvedValue([file1, file2]);
 
-      const notices: string[] = [];
-      const NoticeSpy = vi.spyOn(await import('obsidian'), 'Notice').mockImplementation(
-        ((msg: string) => { notices.push(msg); return { hide: vi.fn(), setMessage: vi.fn() }; }) as any
-      );
-
       await executeCleanup(app as any, settings);
 
-      expect(notices).toContain('Cleanup failed: 2 files could not be removed (see console)');
-      NoticeSpy.mockRestore();
+      expect(noticeMessages).toContain('Cleanup failed: 2 files could not be removed (see console)');
     });
   });
 });
