@@ -32,8 +32,18 @@ export class CleanupModal extends Modal {
   }
 
   onOpen(): void {
-    const { contentEl } = this;
+    const { contentEl, modalEl } = this;
     contentEl.empty();
+
+    // Flex layout: header + list (scrollable) + buttons (fixed at bottom)
+    modalEl.style.maxHeight = '80vh';
+    modalEl.style.display = 'flex';
+    modalEl.style.flexDirection = 'column';
+    contentEl.style.display = 'flex';
+    contentEl.style.flexDirection = 'column';
+    contentEl.style.overflow = 'hidden';
+    contentEl.style.flex = '1';
+    contentEl.style.minHeight = '0';
 
     // Title
     contentEl.createEl('h2', { text: 'Clean Orphaned Attachments' });
@@ -54,9 +64,10 @@ export class CleanupModal extends Modal {
       toggleBtn.textContent = allChecked ? 'Select All' : 'Deselect All';
     };
 
-    // Scrollable container (D-06)
+    // Scrollable container (D-06) — flex:1 fills remaining space
     const listEl = contentEl.createEl('div');
-    listEl.style.maxHeight = '400px';
+    listEl.style.flex = '1';
+    listEl.style.minHeight = '0';
     listEl.style.overflowY = 'auto';
     listEl.style.marginTop = '8px';
 
