@@ -24,7 +24,6 @@ data.json
 .planning/
 
 # ── GSD baseline (auto-generated) ──
-.gsd
 .gsd-id
 .bg-shell/
 Thumbs.db

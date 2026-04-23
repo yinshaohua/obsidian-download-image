@@ -1,0 +1,4 @@
+# Exclude all GSD data files from version control
+*
+# But keep this file itself tracked
+!.gitignore
