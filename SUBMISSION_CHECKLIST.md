@@ -17,10 +17,9 @@ Use this checklist when preparing the plugin for the Obsidian community catalog.
 
 Resolve these issues before submitting the plugin to the Obsidian community catalog:
 
-- [ ] **Plugin ID must change.** The current plugin ID, `obsidian-download-image`, contains `obsidian`. Obsidian validation rejects plugin IDs containing `obsidian`, so update `manifest.json` to a compliant ID such as `download-image` before submission.
-- [ ] **README install path must match the final plugin ID.** After changing the ID in `manifest.json`, update the install path examples in `README.md` so they use the same folder name.
-- [ ] **`authorUrl` must be populated or removed.** `manifest.json` currently includes `"authorUrl": ""`. Replace it with a real URL or remove the field entirely.
-- [ ] **No release workflow exists yet.** `.github/workflows/release.yml` is currently missing. This is not a hard submission requirement, but a tag-triggered workflow is strongly recommended so release assets are uploaded consistently.
+- [ ] **Plugin ID uniqueness must be confirmed.** The repository now uses `download-image`; verify that this ID is still available in Obsidian's `community-plugins.json` before opening the catalog PR.
+- [ ] **`repo` must be replaced with the final GitHub path.** Update the example `community-plugins.json` entry below so it points to the exact public `owner/repo` that hosts the release assets.
+- [ ] **Release assets must exist on the published GitHub release.** Run the local checks first, then confirm the real GitHub release contains `main.js`, `manifest.json`, and `styles.css` before opening the external PR.
 
 ## Create the GitHub release
 

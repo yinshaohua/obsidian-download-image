@@ -45,7 +45,7 @@ To remove unused downloaded files later:
 Once a release is published, copy these files into your vault at:
 
 ```text
-<Vault>/.obsidian/plugins/obsidian-download-image/
+<Vault>/.obsidian/plugins/download-image/
 ```
 
 Required release assets:
@@ -64,7 +64,7 @@ Then reload Obsidian and enable **Download Image** in **Settings → Community p
 This repository is also usable for local plugin development. Build the plugin, then copy the release artifacts into:
 
 ```text
-<Vault>/.obsidian/plugins/obsidian-download-image/
+<Vault>/.obsidian/plugins/download-image/
 ```
 
 ## Development

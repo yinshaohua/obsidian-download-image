@@ -1,10 +1,9 @@
 {
-	"id": "obsidian-download-image",
+	"id": "download-image",
 	"name": "Download Image",
 	"version": "1.0.0",
 	"minAppVersion": "1.5.7",
 	"description": "Download remote images in the current note to local vault storage.",
 	"author": "yinsh",
-	"authorUrl": "",
 	"isDesktopOnly": false
 }
