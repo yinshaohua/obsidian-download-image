@@ -121,15 +121,15 @@ if (manifest) {
   if (typeof manifest.id === "string" && manifest.id.startsWith("obsidian-")) {
     addWarn(
       "Plugin ID policy",
-      `Plugin id \"${manifest.id}\" starts with \"obsidian-\". Obsidian community review rejects plugin IDs containing \"obsidian\"; rename before submission.`,
+      `Plugin id "${manifest.id}" starts with "obsidian-". Obsidian community review rejects plugin IDs containing "obsidian"; rename before submission.`,
     );
   } else if (typeof manifest.id === "string" && manifest.id.includes("obsidian")) {
     addWarn(
       "Plugin ID policy",
-      `Plugin id \"${manifest.id}\" contains \"obsidian\". Community review may reject this id; confirm whether it must be renamed before submission.`,
+      `Plugin id "${manifest.id}" contains "obsidian". Community review may reject this id; confirm whether it must be renamed before submission.`,
     );
   } else if (typeof manifest.id === "string") {
-    addPass("Plugin ID policy", `Plugin id \"${manifest.id}\" does not contain the restricted prefix.`);
+    addPass("Plugin ID policy", `Plugin id "${manifest.id}" does not contain the restricted prefix.`);
   }
 
   if (Object.prototype.hasOwnProperty.call(manifest, "authorUrl") && manifest.authorUrl === "") {

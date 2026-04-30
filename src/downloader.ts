@@ -44,9 +44,9 @@ export const MIME_TO_EXT: Record<string, string> = {
 function sanitizeFilename(name: string): string {
 	return name
 		.replace(/[*"\\/<>:|?]/g, '')
-		.replace(/[\x00-\x1f]/g, '')
+		.replace(/[\0-\x1F]/g, '')
 		.replace(/\s+/g, '-')
-		.replace(/^[.\-]+|[.\-]+$/g, '') || `image-${Date.now()}`;
+		.replace(/^[.-]+|[.-]+$/g, '') || `image-${Date.now()}`;
 }
 
 /**
@@ -287,8 +287,7 @@ async function saveToVault(app: App, filename: string, notePath: string, buffer:
 		targetPath = await app.fileManager.getAvailablePathForAttachment(filename, notePath);
 	} catch {
 		// Fallback — resolve templates and construct the path ourselves
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const rawFolder: string = (app.vault as any).getConfig?.('attachmentFolderPath') ?? '';
+		const rawFolder: string = (app.vault as { getConfig?: (key: string) => unknown }).getConfig?.('attachmentFolderPath') as string | undefined ?? '';
 		const resolved = resolvePathTemplates(rawFolder);
 
 		let folder: string;
