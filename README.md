@@ -110,7 +110,7 @@ Key project files:
 
 ## Release process for maintainers
 
-When preparing a plugin release:
+When preparing a plugin release (the current repository version is `1.0.0`):
 
 1. Update `manifest.json` version using SemVer.
 2. Update `versions.json` so each plugin version maps to the correct minimum Obsidian version.
