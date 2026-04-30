@@ -1,90 +1,155 @@
-# Obsidian Sample Plugin
+# Download Image
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Download Image is an Obsidian community plugin that finds remote image URLs in the current note, downloads those files into your vault, and rewrites the note to point at the local attachments instead.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+It is intended for users who want notes to remain self-contained, available offline, and less dependent on third-party image hosts.
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## What the plugin does
 
-## First time developing plugins?
+The plugin currently provides two commands:
 
-Quick starting guide for new plugin devs:
+- **Download images in current note** — scans the active note for remote image references, downloads each unique image into the vault, and replaces the remote URLs with local paths.
+- **Clean unused attachments** — scans for orphaned attachments, lets you review them, and then either moves them to `.trash` or permanently deletes them based on settings.
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## Settings
 
-## Releasing new releases
+The plugin includes a settings tab with options for:
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-## Adding your plugin to the community plugin list
-
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+- **Image naming strategy**
+  - URL hash
+  - Timestamp prefix
+  - Content hash
+- **Concurrent downloads**
+- **Cleanup method**
+  - Move to `.trash`
+  - Permanent delete
+- **Excluded folders** for orphan scans
 
 ## How to use
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+1. Open a note that contains remote image links.
+2. Run **Download images in current note** from the command palette.
+3. Wait for the progress notice to finish.
+4. Review the updated note content and the downloaded attachments in your vault.
 
-## Manually installing the plugin
+To remove unused downloaded files later:
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+1. Run **Clean unused attachments** from the command palette.
+2. Review the detected orphaned files in the cleanup modal.
+3. Confirm removal using your configured cleanup method.
 
-## Improve code quality with eslint
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+## Installation for users
 
-## Funding URL
+### From a release build
 
-You can include funding URLs where people who use your plugin can financially support it.
+Once a release is published, copy these files into your vault at:
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+```text
+<Vault>/.obsidian/plugins/obsidian-download-image/
 ```
 
-If you have multiple URLs, you can also do:
+Required release assets:
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
+- `main.js`
+- `manifest.json`
+
+Optional asset:
+
+- `styles.css`
+
+Then reload Obsidian and enable **Download Image** in **Settings → Community plugins**.
+
+### Manual development install
+
+This repository is also usable for local plugin development. Build the plugin, then copy the release artifacts into:
+
+```text
+<Vault>/.obsidian/plugins/obsidian-download-image/
 ```
 
-## API Documentation
+## Development
 
-See https://docs.obsidian.md
+### Requirements
+
+- Node.js 18+
+- npm
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Run the development build
+
+```bash
+npm run dev
+```
+
+### Run the production build
+
+```bash
+npm run build
+```
+
+### Run tests
+
+```bash
+npm test
+```
+
+## Repository structure
+
+Key project files:
+
+- `manifest.json` — plugin metadata used by Obsidian releases
+- `package.json` — npm scripts and development metadata
+- `src/main.ts` — plugin lifecycle and command registration
+- `src/settings.ts` — persisted settings and settings UI
+- `versions.json` — plugin version to minimum Obsidian version mapping
+
+## Release process for maintainers
+
+When preparing a plugin release:
+
+1. Update `manifest.json` version using SemVer.
+2. Update `versions.json` so each plugin version maps to the correct minimum Obsidian version.
+3. Ensure `package.json` metadata still matches the plugin identity.
+4. Run:
+
+   ```bash
+   npm run build
+   npm test
+   ```
+
+5. Create a GitHub release whose tag exactly matches `manifest.json`'s version number.
+   - Do **not** prefix the tag with `v`.
+6. Upload the release assets:
+   - `main.js`
+   - `manifest.json`
+   - `styles.css` if present
+
+## Community plugin submission notes
+
+This repository is the source for the public Obsidian community plugin release.
+
+For community review and catalog updates, maintainers should ensure that:
+
+- the repository README describes the real plugin behavior
+- `manifest.json` contains accurate plugin metadata
+- release assets are attached individually to the GitHub release
+- the release tag exactly matches the plugin version
+- the plugin follows Obsidian community plugin guidelines and developer policies
+
+The community plugin submission flow itself happens through the Obsidian plugin review/catalog process, but this repository must stay aligned with that release contract.
+
+## Notes on behavior
+
+- The plugin only downloads remote images when you explicitly run the command.
+- Duplicate image URLs in the same note are deduplicated during a run.
+- Download and cleanup progress is surfaced with Obsidian notices.
+- Failures are summarized in notices and logged to the developer console for troubleshooting.
+
+## License
+
+0BSD
