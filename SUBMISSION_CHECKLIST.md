@@ -45,7 +45,7 @@ Add or update this object in `community-plugins.json` in the `obsidian-releases`
   "name": "Download Image",
   "author": "yinsh",
   "description": "Download remote images in the current note to local vault storage.",
-  "repo": "<github-username>/obsidian-download-image"
+  "repo": "yinshaohua/obsidian-download-image"
 }
 ```
 
