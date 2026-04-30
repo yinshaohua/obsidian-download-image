@@ -8,7 +8,7 @@ import {showCleanupModal} from "./modal";
 
 /**
  * Extracted cleanup pipeline for testability (D-03).
- * Runs scan -> modal -> delete with ENOENT guard and error resilience.
+ * Runs scan -> modal -> trash with error resilience.
  */
 export async function executeCleanup(
 	app: App,
@@ -21,15 +21,6 @@ export async function executeCleanup(
 		return;
 	}
 
-	// ENOENT guard: pre-create .trash folder if missing (D-07)
-	if (settings.cleanupMethod === 'trash') {
-		const trashFolder = app.vault.getAbstractFileByPath('.trash');
-		if (!trashFolder) {
-			await app.vault.createFolder('.trash');
-		}
-	}
-
-	// Progress Notice (D-12, D-13)
 	const progressNotice = new Notice('Cleaning up...', 0);
 
 	let successCount = 0;
@@ -38,11 +29,7 @@ export async function executeCleanup(
 	try {
 		for (const file of selected) {
 			try {
-				if (settings.cleanupMethod === 'trash') {
-					await app.vault.trash(file, false);
-				} else {
-					await app.vault.delete(file);
-				}
+				await app.fileManager.trashFile(file);
 				successCount++;
 			} catch (err) {
 				failCount++;
@@ -50,19 +37,18 @@ export async function executeCleanup(
 			}
 		}
 
-		// Hide progress, show result Notice (D-10)
 		progressNotice.hide();
 		if (failCount === 0) {
 			new Notice(`Cleaned ${successCount} attachments`);
 		} else if (successCount > 0) {
-			new Notice(`Cleaned ${successCount} attachments, ${failCount} failed (see console)`);
+			new Notice(`Cleaned ${successCount} attachments, ${failCount} failed (see debug log)`);
 		} else {
-			new Notice(`Cleanup failed: ${failCount} files could not be removed (see console)`);
+			new Notice(`Cleanup failed: ${failCount} files could not be removed (see debug log)`);
 		}
 	} catch (err) {
 		progressNotice.hide();
 		console.error('[download-image] Unexpected cleanup error:', err);
-		new Notice('Cleanup failed unexpectedly. Check console for details.');
+		new Notice('Cleanup failed unexpectedly. Check the debug log for details.');
 	}
 }
 
@@ -73,8 +59,8 @@ export default class DownloadImagePlugin extends Plugin {
 		await this.loadSettings();
 
 		this.addCommand({
-			id: 'download-images',
-			name: 'Download images in current note',
+			id: 'save-remote-files-in-current-note',
+			name: 'Save remote files in current note',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				const content = editor.getValue();
 				const refs = extractImages(content);
@@ -84,8 +70,6 @@ export default class DownloadImagePlugin extends Plugin {
 				}
 
 				const notePath = view.file?.path ?? '';
-
-				// Real-time progress Notice — reuse single Notice instance
 				const progressNotice = new Notice('Downloading images...', 0);
 
 				try {
@@ -97,10 +81,8 @@ export default class DownloadImagePlugin extends Plugin {
 						},
 					});
 
-					// Hide progress notice
 					progressNotice.hide();
 
-					// Deduplicate by URL for accurate counts
 					const seen = new Set<string>();
 					const uniqueResults: typeof results = [];
 					for (const r of results) {
@@ -113,23 +95,11 @@ export default class DownloadImagePlugin extends Plugin {
 					const ok = uniqueResults.filter(r => r.status === 'ok').length;
 					const failedResults = uniqueResults.filter(r => r.status === 'failed');
 
-					// Always log summary
-					console.log(`[download-image] ${refs.length} refs found, ${uniqueResults.length} unique URLs, ${ok} ok, ${failedResults.length} failed`);
-					for (const r of uniqueResults) {
-						if (r.status === 'ok') {
-							console.log(`  OK ${r.ref.url} -> ${r.localPath}`);
-						} else {
-							console.warn(`  FAIL ${r.ref.url}: ${r.error}`);
-						}
-					}
-
-					// Replace URLs in document via single editor.transaction
 					if (ok > 0) {
 						const currentContent = editor.getValue();
 						const replacements = buildReplacementMap(currentContent, results);
 						if (replacements.length > 0) {
 							const newContent = applyReplacements(currentContent, replacements);
-							// Single transaction = single undo step
 							editor.transaction({
 								changes: [{
 									from: { line: 0, ch: 0 },
@@ -140,17 +110,15 @@ export default class DownloadImagePlugin extends Plugin {
 						}
 					}
 
-					// Concise summary notice
 					const dupes = refs.length - uniqueResults.length;
 					new Notice(
-						`Downloaded ${ok} image(s)${failedResults.length > 0 ? `, ${failedResults.length} failed (see console)` : ''}` +
+						`Downloaded ${ok} image(s)${failedResults.length > 0 ? `, ${failedResults.length} failed (see debug log)` : ''}` +
 						(dupes > 0 ? ` (${dupes} duplicate refs skipped)` : '')
 					);
-
 				} catch (err) {
 					progressNotice.hide();
 					console.error('[download-image] Unexpected error:', err);
-					new Notice('Image download failed unexpectedly. Check console for details.');
+					new Notice('Image download failed unexpectedly. Check the debug log for details.');
 				}
 			}
 		});

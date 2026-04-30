@@ -36,7 +36,7 @@ To remove unused downloaded files later:
 
 1. Run **Clean unused attachments** from the command palette.
 2. Review the detected orphaned files in the cleanup modal.
-3. Confirm removal using your configured cleanup method.
+3. Confirm removal using Obsidian’s standard trash behavior.
 
 ## Installation for users
 

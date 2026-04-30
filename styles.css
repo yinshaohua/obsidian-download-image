@@ -1,8 +1,51 @@
-/*
+.download-image-cleanup-modal {
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.download-image-cleanup-modal__content {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	flex: 1 1 auto;
+	min-height: 0;
+}
 
-If your plugin does not need CSS, delete this file.
+.download-image-cleanup-modal__list {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	margin-top: 8px;
+}
 
-*/
+.download-image-cleanup-modal__row {
+	display: flex;
+	align-items: center;
+	padding: 4px 0;
+}
+
+.download-image-cleanup-modal__label {
+	display: flex;
+	flex: 1 1 auto;
+	gap: 8px;
+}
+
+.download-image-cleanup-modal__name {
+	flex: 2 1 0;
+}
+
+.download-image-cleanup-modal__folder {
+	flex: 2 1 0;
+	color: var(--text-muted);
+}
+
+.download-image-cleanup-modal__size {
+	flex: 1 1 0;
+	text-align: right;
+}
+
+.download-image-setting-note {
+	margin-top: 8px;
+	color: var(--text-muted);
+}

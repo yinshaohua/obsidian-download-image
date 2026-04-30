@@ -35,18 +35,12 @@ export class CleanupModal extends Modal {
     const { contentEl, modalEl } = this;
     contentEl.empty();
 
-    // Flex layout: header + list (scrollable) + buttons (fixed at bottom)
-    modalEl.style.maxHeight = '80vh';
-    modalEl.style.display = 'flex';
-    modalEl.style.flexDirection = 'column';
-    contentEl.style.display = 'flex';
-    contentEl.style.flexDirection = 'column';
-    contentEl.style.overflow = 'hidden';
-    contentEl.style.flex = '1';
-    contentEl.style.minHeight = '0';
+    modalEl.addClass('download-image-cleanup-modal');
+    contentEl.addClass('download-image-cleanup-modal__content');
 
-    // Title
-    contentEl.createEl('h2', { text: 'Clean Orphaned Attachments' });
+    new Setting(contentEl)
+      .setName('Clean orphaned attachments')
+      .setHeading();
 
     // Sort by vault path alphabetically (D-02)
     const sorted = [...this.orphans].sort((a, b) =>
@@ -56,55 +50,58 @@ export class CleanupModal extends Modal {
     // Checkbox state map: file path -> <input>
     const checkboxMap = new Map<string, HTMLInputElement>();
 
-    // Select All / Deselect All toggle (D-05)
-    const toggleBtn = contentEl.createEl('button', { text: 'Deselect All' });
-    toggleBtn.onclick = () => {
-      const allChecked = [...checkboxMap.values()].every(cb => cb.checked);
-      checkboxMap.forEach(cb => { cb.checked = !allChecked; });
-      toggleBtn.textContent = allChecked ? 'Select All' : 'Deselect All';
-    };
+    const toggleSetting = new Setting(contentEl)
+      .setName('Selection')
+      .setDesc('Choose which orphaned attachments to remove.');
+
+    let toggleBtnText = 'Deselect all';
+    let toggleBtn: HTMLButtonElement | null = null;
+    toggleSetting.addButton(btn => {
+      btn.setButtonText(toggleBtnText)
+        .onClick(() => {
+          const allChecked = [...checkboxMap.values()].every(cb => cb.checked);
+          checkboxMap.forEach(cb => { cb.checked = !allChecked; });
+          toggleBtnText = allChecked ? 'Select all' : 'Deselect all';
+          toggleBtn?.setText(toggleBtnText);
+        });
+      toggleBtn = btn.buttonEl;
+    });
 
     // Scrollable container (D-06) — flex:1 fills remaining space
-    const listEl = contentEl.createEl('div');
-    listEl.style.flex = '1';
-    listEl.style.minHeight = '0';
-    listEl.style.overflowY = 'auto';
-    listEl.style.marginTop = '8px';
+    const listEl = contentEl.createDiv({ cls: 'download-image-cleanup-modal__list' });
 
     // File rows (D-01, D-03, D-04)
     for (const orphan of sorted) {
-      const row = listEl.createEl('div', { cls: 'cleanup-modal-row' });
-      row.style.display = 'flex';
-      row.style.alignItems = 'center';
-      row.style.padding = '4px 0';
+      const row = listEl.createDiv({ cls: 'download-image-cleanup-modal__row' });
 
       // Checkbox — checked by default (D-04)
-      const cb = row.createEl('input') as HTMLInputElement;
+      const cb = row.createEl('input');
       cb.type = 'checkbox';
       cb.checked = true;
       cb.id = 'cleanup-' + orphan.file.path;
       checkboxMap.set(orphan.file.path, cb);
 
       // Label with three columns: name, folder, size (D-01)
-      const label = row.createEl('label');
+      const label = row.createEl('label', { cls: 'download-image-cleanup-modal__label' });
       label.htmlFor = cb.id;
-      label.style.display = 'flex';
-      label.style.flex = '1';
-      label.style.gap = '8px';
 
-      const nameSpan = label.createEl('span', { text: orphan.file.name });
-      nameSpan.style.flex = '2';
+      label.createSpan({
+        text: orphan.file.name,
+        cls: 'download-image-cleanup-modal__name',
+      });
 
       const folder = orphan.file.path.includes('/')
         ? orphan.file.path.substring(0, orphan.file.path.lastIndexOf('/'))
         : '/';
-      const folderSpan = label.createEl('span', { text: folder });
-      folderSpan.style.flex = '2';
-      folderSpan.style.color = 'var(--text-muted)';
+      label.createSpan({
+        text: folder,
+        cls: 'download-image-cleanup-modal__folder',
+      });
 
-      const sizeSpan = label.createEl('span', { text: formatFileSize(orphan.size) });
-      sizeSpan.style.flex = '1';
-      sizeSpan.style.textAlign = 'right';
+      label.createSpan({
+        text: formatFileSize(orphan.size),
+        cls: 'download-image-cleanup-modal__size',
+      });
     }
 
     // Action buttons using Setting API
@@ -115,7 +112,8 @@ export class CleanupModal extends Modal {
         .onClick(() => {
           const selected = [...checkboxMap.entries()]
             .filter(([, cb]) => cb.checked)
-            .map(([path]) => this.orphans.find(o => o.file.path === path)!.file);
+            .map(([path]) => this.orphans.find(o => o.file.path === path)?.file)
+            .filter((file): file is TFile => file !== undefined);
           this.resolved = true;
           this.resolveFn(selected);
           this.close();

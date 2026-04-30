@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TFile } from 'obsidian';
 
-// Track Notice constructor calls
 const noticeMessages: string[] = [];
 
-// Mock obsidian module to intercept Notice constructor
 vi.mock('obsidian', async () => {
   const actual = await vi.importActual<typeof import('obsidian')>('obsidian');
   return {
@@ -18,7 +16,6 @@ vi.mock('obsidian', async () => {
   };
 });
 
-// Mock scanner and modal modules
 vi.mock('../src/scanner', () => ({
   scanOrphanedAttachments: vi.fn(),
 }));
@@ -30,21 +27,19 @@ vi.mock('../src/modal', () => ({
 import { scanOrphanedAttachments } from '../src/scanner';
 import { showCleanupModal } from '../src/modal';
 import type { DownloadImageSettings } from '../src/settings';
-
-// Will be implemented in main.ts
 import { executeCleanup } from '../src/main';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
 function makeMockApp(overrides: Record<string, unknown> = {}) {
+  const fileManager = {
+    trashFile: vi.fn().mockResolvedValue(undefined),
+    ...((overrides.fileManager as Record<string, unknown> | undefined) ?? {}),
+  };
+
   return {
     vault: {
-      trash: vi.fn().mockResolvedValue(undefined),
-      delete: vi.fn().mockResolvedValue(undefined),
-      getAbstractFileByPath: vi.fn().mockReturnValue(null),
-      createFolder: vi.fn().mockResolvedValue(undefined),
-      ...overrides,
+      ...((overrides.vault as Record<string, unknown> | undefined) ?? {}),
     },
+    fileManager,
   } as unknown;
 }
 
@@ -52,7 +47,6 @@ function makeSettings(overrides: Partial<DownloadImageSettings> = {}): DownloadI
   return {
     namingStrategy: 'original',
     concurrency: 3,
-    cleanupMethod: 'trash',
     excludedFolders: [],
     ...overrides,
   };
@@ -61,8 +55,6 @@ function makeSettings(overrides: Partial<DownloadImageSettings> = {}): DownloadI
 function makeFile(path: string): TFile {
   return new TFile(path, 1024);
 }
-
-// ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe('executeCleanup', () => {
   const mockScan = scanOrphanedAttachments as ReturnType<typeof vi.fn>;
@@ -105,79 +97,24 @@ describe('executeCleanup', () => {
 
       await executeCleanup(app as any, settings);
 
-      expect((app as any).vault.trash).not.toHaveBeenCalled();
-      expect((app as any).vault.delete).not.toHaveBeenCalled();
+      expect((app as any).fileManager.trashFile).not.toHaveBeenCalled();
     });
   });
 
-  describe('deletion methods', () => {
-    it('calls vault.trash(file, false) for each file when cleanupMethod is trash', async () => {
+  describe('deletion behavior', () => {
+    it('calls fileManager.trashFile(file) for each selected file', async () => {
       const file1 = makeFile('a.png');
       const file2 = makeFile('b.jpg');
       const app = makeMockApp();
-      const settings = makeSettings({ cleanupMethod: 'trash' });
+      const settings = makeSettings();
       mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
       mockModal.mockResolvedValue([file1, file2]);
 
       await executeCleanup(app as any, settings);
 
-      expect((app as any).vault.trash).toHaveBeenCalledWith(file1, false);
-      expect((app as any).vault.trash).toHaveBeenCalledWith(file2, false);
-      expect((app as any).vault.trash).toHaveBeenCalledTimes(2);
-    });
-
-    it('calls vault.delete(file) for each file when cleanupMethod is delete', async () => {
-      const file1 = makeFile('a.png');
-      const file2 = makeFile('b.jpg');
-      const app = makeMockApp();
-      const settings = makeSettings({ cleanupMethod: 'delete' });
-      mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
-      mockModal.mockResolvedValue([file1, file2]);
-
-      await executeCleanup(app as any, settings);
-
-      expect((app as any).vault.delete).toHaveBeenCalledWith(file1);
-      expect((app as any).vault.delete).toHaveBeenCalledWith(file2);
-      expect((app as any).vault.delete).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe('.trash ENOENT guard', () => {
-    it('pre-creates .trash folder when missing and cleanupMethod is trash', async () => {
-      const file1 = makeFile('a.png');
-      const app = makeMockApp({ getAbstractFileByPath: vi.fn().mockReturnValue(null) });
-      const settings = makeSettings({ cleanupMethod: 'trash' });
-      mockScan.mockResolvedValue([{ file: file1, size: 10 }]);
-      mockModal.mockResolvedValue([file1]);
-
-      await executeCleanup(app as any, settings);
-
-      expect((app as any).vault.getAbstractFileByPath).toHaveBeenCalledWith('.trash');
-      expect((app as any).vault.createFolder).toHaveBeenCalledWith('.trash');
-    });
-
-    it('skips .trash pre-creation when folder already exists', async () => {
-      const file1 = makeFile('a.png');
-      const app = makeMockApp({ getAbstractFileByPath: vi.fn().mockReturnValue({ path: '.trash' }) });
-      const settings = makeSettings({ cleanupMethod: 'trash' });
-      mockScan.mockResolvedValue([{ file: file1, size: 10 }]);
-      mockModal.mockResolvedValue([file1]);
-
-      await executeCleanup(app as any, settings);
-
-      expect((app as any).vault.createFolder).not.toHaveBeenCalled();
-    });
-
-    it('skips .trash pre-creation when cleanupMethod is delete', async () => {
-      const file1 = makeFile('a.png');
-      const app = makeMockApp();
-      const settings = makeSettings({ cleanupMethod: 'delete' });
-      mockScan.mockResolvedValue([{ file: file1, size: 10 }]);
-      mockModal.mockResolvedValue([file1]);
-
-      await executeCleanup(app as any, settings);
-
-      expect((app as any).vault.createFolder).not.toHaveBeenCalled();
+      expect((app as any).fileManager.trashFile).toHaveBeenCalledWith(file1);
+      expect((app as any).fileManager.trashFile).toHaveBeenCalledWith(file2);
+      expect((app as any).fileManager.trashFile).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -185,24 +122,24 @@ describe('executeCleanup', () => {
     it('continues deleting after individual file failure', async () => {
       const file1 = makeFile('a.png');
       const file2 = makeFile('b.jpg');
-      const trashFn = vi.fn()
+      const trashFileFn = vi.fn()
         .mockRejectedValueOnce(new Error('permission denied'))
         .mockResolvedValueOnce(undefined);
-      const app = makeMockApp({ trash: trashFn });
-      const settings = makeSettings({ cleanupMethod: 'trash' });
+      const app = makeMockApp({ fileManager: { trashFile: trashFileFn } });
+      const settings = makeSettings();
       mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
       mockModal.mockResolvedValue([file1, file2]);
 
       await executeCleanup(app as any, settings);
 
-      expect(trashFn).toHaveBeenCalledTimes(2);
+      expect(trashFileFn).toHaveBeenCalledTimes(2);
     });
 
     it('logs failed file path to console.error', async () => {
       const file1 = makeFile('attachments/broken.png');
-      const trashFn = vi.fn().mockRejectedValueOnce(new Error('fail'));
-      const app = makeMockApp({ trash: trashFn });
-      const settings = makeSettings({ cleanupMethod: 'trash' });
+      const trashFileFn = vi.fn().mockRejectedValueOnce(new Error('fail'));
+      const app = makeMockApp({ fileManager: { trashFile: trashFileFn } });
+      const settings = makeSettings();
       mockScan.mockResolvedValue([{ file: file1, size: 10 }]);
       mockModal.mockResolvedValue([file1]);
 
@@ -223,7 +160,7 @@ describe('executeCleanup', () => {
       const file1 = makeFile('a.png');
       const file2 = makeFile('b.jpg');
       const app = makeMockApp();
-      const settings = makeSettings({ cleanupMethod: 'trash' });
+      const settings = makeSettings();
       mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
       mockModal.mockResolvedValue([file1, file2]);
 
@@ -235,31 +172,31 @@ describe('executeCleanup', () => {
     it('shows partial failure message', async () => {
       const file1 = makeFile('a.png');
       const file2 = makeFile('b.jpg');
-      const trashFn = vi.fn()
+      const trashFileFn = vi.fn()
         .mockResolvedValueOnce(undefined)
         .mockRejectedValueOnce(new Error('fail'));
-      const app = makeMockApp({ trash: trashFn });
-      const settings = makeSettings({ cleanupMethod: 'trash' });
+      const app = makeMockApp({ fileManager: { trashFile: trashFileFn } });
+      const settings = makeSettings();
       mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
       mockModal.mockResolvedValue([file1, file2]);
 
       await executeCleanup(app as any, settings);
 
-      expect(noticeMessages).toContain('Cleaned 1 attachments, 1 failed (see console)');
+      expect(noticeMessages).toContain('Cleaned 1 attachments, 1 failed (see debug log)');
     });
 
     it('shows all-failed message', async () => {
       const file1 = makeFile('a.png');
       const file2 = makeFile('b.jpg');
-      const trashFn = vi.fn().mockRejectedValue(new Error('fail'));
-      const app = makeMockApp({ trash: trashFn });
-      const settings = makeSettings({ cleanupMethod: 'trash' });
+      const trashFileFn = vi.fn().mockRejectedValue(new Error('fail'));
+      const app = makeMockApp({ fileManager: { trashFile: trashFileFn } });
+      const settings = makeSettings();
       mockScan.mockResolvedValue([{ file: file1, size: 10 }, { file: file2, size: 20 }]);
       mockModal.mockResolvedValue([file1, file2]);
 
       await executeCleanup(app as any, settings);
 
-      expect(noticeMessages).toContain('Cleanup failed: 2 files could not be removed (see console)');
+      expect(noticeMessages).toContain('Cleanup failed: 2 files could not be removed (see debug log)');
     });
   });
 });

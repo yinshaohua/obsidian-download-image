@@ -3,19 +3,15 @@ import DownloadImagePlugin from "./main";
 
 export type NamingStrategy = 'original' | 'timestamp' | 'hash';
 
-export type CleanupMethod = 'trash' | 'delete';
-
 export interface DownloadImageSettings {
 	namingStrategy: NamingStrategy;
 	concurrency: number;
-	cleanupMethod: CleanupMethod;
 	excludedFolders: string[];
 }
 
 export const DEFAULT_SETTINGS: DownloadImageSettings = {
 	namingStrategy: 'original',
 	concurrency: 3,
-	cleanupMethod: 'trash',
 	excludedFolders: [],
 };
 
@@ -31,8 +27,9 @@ export class DownloadImageSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 		containerEl.empty();
 
-		// ── Download section ──
-		containerEl.createEl('h2', { text: 'Download' });
+		new Setting(containerEl)
+			.setName('Download')
+			.setHeading();
 
 		new Setting(containerEl)
 			.setName('Image naming strategy')
@@ -64,39 +61,19 @@ export class DownloadImageSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		// ── Cleanup section ──
-		containerEl.createEl('h2', { text: 'Cleanup' });
-
-		// Cleanup method dropdown
 		new Setting(containerEl)
-			.setName('Cleanup method')
-			.setDesc('How orphaned attachments are removed.')
-			.addDropdown(dropdown => dropdown
-				.addOptions({
-					trash: 'Move to .trash',
-					delete: 'Permanent delete',
-				})
-				.setValue(this.plugin.settings.cleanupMethod)
-				.onChange(async (value) => {
-					this.plugin.settings.cleanupMethod = value as CleanupMethod;
-					await this.plugin.saveSettings();
-					warningEl.style.display = value === 'delete' ? 'block' : 'none';
-				}));
+			.setName('Cleanup')
+			.setHeading();
 
-		// Inline warning for permanent delete
-		const warningEl = containerEl.createEl('p', {
-			text: 'Warning: Files will be permanently deleted and cannot be recovered.',
-			cls: 'mod-warning',
-		});
-		warningEl.style.display =
-			this.plugin.settings.cleanupMethod === 'delete' ? 'block' : 'none';
+		new Setting(containerEl)
+			.setName('Attachment removal')
+			.setDesc('Unused attachments are removed with Obsidian’s standard file trash behavior.');
 
-		// Folder exclusions textarea
 		new Setting(containerEl)
 			.setName('Excluded folders')
 			.setDesc('Folder paths to exclude from orphan scan (one per line). Uses exact prefix matching.')
 			.addTextArea(textarea => textarea
-				.setPlaceholder('attachments/archive\ntemp')
+				.setPlaceholder('Enter one folder path per line.')
 				.setValue(this.plugin.settings.excludedFolders.join('\n'))
 				.onChange(async (value) => {
 					this.plugin.settings.excludedFolders = value
