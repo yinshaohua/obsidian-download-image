@@ -8,7 +8,7 @@ It is intended for users who want notes to remain self-contained, available offl
 
 The plugin currently provides two commands:
 
-- **Download images in current note** — scans the active note for remote image references, downloads each unique image into the vault, and replaces the remote URLs with local paths.
+- **Save remote files in current note** — scans the active note for remote image references, downloads each unique image into the vault, and replaces the remote URLs with local paths.
 - **Clean unused attachments** — scans for orphaned attachments, lets you review them, and then either moves them to `.trash` or permanently deletes them based on settings.
 
 ## Settings
@@ -28,7 +28,7 @@ The plugin includes a settings tab with options for:
 ## How to use
 
 1. Open a note that contains remote image links.
-2. Run **Download images in current note** from the command palette.
+2. Run **Save remote files in current note** from the command palette.
 3. Wait for the progress notice to finish.
 4. Review the updated note content and the downloaded attachments in your vault.
 

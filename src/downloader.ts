@@ -44,7 +44,7 @@ export const MIME_TO_EXT: Record<string, string> = {
 function sanitizeFilename(name: string): string {
 	return name
 		.replace(/[*"\\/<>:|?]/g, '')
-		.replace(/[\x00-\x1e]/g, '')
+		.replace(/[\u0000-\u001f]/g, '')
 		.replace(/\s+/g, '-')
 		.replace(/^[.-]+|[.-]+$/g, '') || `image-${Date.now()}`;
 }
