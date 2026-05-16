@@ -190,9 +190,9 @@ export function decodeBase64Image(dataUri: string): { buffer: ArrayBuffer; mimeT
  * D-10: Validates response.status === 200 before accessing arrayBuffer.
  */
 async function fetchWithTimeout(url: string): Promise<{ buffer: ArrayBuffer; contentType: string }> {
-	let timerId: ReturnType<typeof setTimeout>;
+	let timerId: number;
 	const timeoutPromise = new Promise<never>((_, reject) => {
-		timerId = setTimeout(() => reject(new Error('Download timeout: ' + url)), TIMEOUT_MS);
+		timerId = activeWindow.setTimeout(() => reject(new Error('Download timeout: ' + url)), TIMEOUT_MS);
 	});
 
 	try {
@@ -217,7 +217,7 @@ async function fetchWithTimeout(url: string): Promise<{ buffer: ArrayBuffer; con
 		]);
 		return result;
 	} finally {
-		clearTimeout(timerId!);
+		activeWindow.clearTimeout(timerId!);
 	}
 }
 
