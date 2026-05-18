@@ -1,7 +1,7 @@
 {
 	"id": "download-image",
 	"name": "Download Image",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "1.5.7",
 	"description": "Download remote images in the current note to local vault storage.",
 	"author": "yinsh",
