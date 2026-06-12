@@ -76,11 +76,23 @@ This repository is also usable for local plugin development. Build the plugin, t
 
 ### Install dependencies
 
+Use the project dependency wrapper instead of bare `npm install`:
+
 ```bash
 npm run deps:install
 ```
 
-By default, this behaves like `npm install` and creates `./node_modules`. To keep `node_modules` outside this OneDrive-synced project directory, run the PowerShell Profile function `setenv` from the project root first so `EXTERNAL_NODE_MODULES` points at `C:/local_data/obsidian-download-image/node_modules`, then run the same install and npm scripts. See [External node_modules guide](EXTERNAL-NODE-MODULES-GUIDE.md) for details.
+By default, this behaves like `npm install` and creates `./node_modules` in the project directory.
+
+If you want to keep dependencies outside this OneDrive-synced project directory, run the PowerShell Profile function `setenv` from the project root first so `EXTERNAL_NODE_MODULES` points at `C:/local_data/obsidian-download-image/node_modules`, then run:
+
+```bash
+npm run deps:install
+```
+
+Do not use bare `npm install` for the external dependency workflow. `EXTERNAL_NODE_MODULES` is a project-specific variable, not an npm setting, so npm will ignore it unless you go through `npm run deps:install`. A bare `npm install` will still create `./node_modules` in the current project directory.
+
+See [External node_modules guide](EXTERNAL-NODE-MODULES-GUIDE.md) for details.
 
 ### Run the development build
 
@@ -109,6 +121,21 @@ Key project files:
 - `src/main.ts` — plugin lifecycle and command registration
 - `src/settings.ts` — persisted settings and settings UI
 - `versions.json` — plugin version to minimum Obsidian version mapping
+
+Source code lives in `src/`. Keep `src/main.ts` small and focused on plugin lifecycle tasks such as loading settings, registering commands, and adding settings tabs. Put feature logic in focused modules such as downloader, parser, replacer, scanner, modal, and settings files.
+
+## Development conventions
+
+- Use TypeScript and keep strict type safety in mind when changing source files.
+- Use npm and esbuild; the release bundle is generated as top-level `main.js`.
+- Keep the plugin small and avoid large runtime dependencies.
+- Prefer browser-compatible APIs unless the plugin is intentionally desktop-only.
+- Register workspace events, DOM events, and intervals with Obsidian cleanup helpers so plugin unload is safe.
+- Persist settings through `loadData()` and `saveData()` and provide sensible defaults.
+- Add user-facing commands with stable command IDs.
+- Avoid hidden telemetry, remote code execution, or unnecessary network requests.
+- Do not access files outside the vault unless the behavior is essential, documented, and explicitly user initiated.
+- Do not commit generated dependencies or build output such as `node_modules/` or `main.js` during normal development.
 
 ## Release process for maintainers
 
