@@ -7,4 +7,5 @@
 - If `EXTERNAL_NODE_MODULES` is set, dependencies are managed through the external dependency wrapper described in `README.md` and `EXTERNAL-NODE-MODULES-GUIDE.md`.
 - Register Obsidian events, DOM events, and intervals through plugin cleanup helpers so unload remains safe.
 - Preserve privacy: avoid unnecessary network requests, telemetry, remote code execution, or access outside the vault.
+- Keep `.planning/` project artifacts under version control; keep transient GSD runtime state in `.gsd/` ignored.
 - Verify relevant changes with targeted tests or builds before claiming completion.

@@ -118,11 +118,14 @@ Key project files:
 
 - `manifest.json` — plugin metadata used by Obsidian releases
 - `package.json` — npm scripts and development metadata
+- `.planning/` — version-controlled project plans, requirements, decisions, and verification records
 - `src/main.ts` — plugin lifecycle and command registration
 - `src/settings.ts` — persisted settings and settings UI
 - `versions.json` — plugin version to minimum Obsidian version mapping
 
 Source code lives in `src/`. Keep `src/main.ts` small and focused on plugin lifecycle tasks such as loading settings, registering commands, and adding settings tabs. Put feature logic in focused modules such as downloader, parser, replacer, scanner, modal, and settings files.
+
+Planning artifacts in `.planning/` are committed with the repository. Local GSD runtime state in `.gsd/` remains ignored.
 
 ## Development conventions
 
