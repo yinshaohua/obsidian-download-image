@@ -76,23 +76,14 @@ This repository is also usable for local plugin development. Build the plugin, t
 
 ### Install dependencies
 
-Use the project dependency wrapper instead of bare `npm install`:
+Install dependencies into this project's local `node_modules` directory:
 
 ```bash
 npm run deps:install
 ```
 
-By default, this behaves like `npm install` and creates `./node_modules` in the project directory.
-
-If you want to keep dependencies outside this OneDrive-synced project directory, run the PowerShell Profile function `setenv` from the project root first so `EXTERNAL_NODE_MODULES` points at `C:/local_data/obsidian-download-image/node_modules`, then run:
-
-```bash
-npm run deps:install
-```
-
-Do not use bare `npm install` for the external dependency workflow. `EXTERNAL_NODE_MODULES` is a project-specific variable, not an npm setting, so npm will ignore it unless you go through `npm run deps:install`. A bare `npm install` will still create `./node_modules` in the current project directory.
-
-See [External node_modules guide](EXTERNAL-NODE-MODULES-GUIDE.md) for details.
+This script runs `npm install` in the project root. Dependencies are always kept in
+`./node_modules`; no environment setup or external dependency directory is used.
 
 ### Run the development build
 

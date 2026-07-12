@@ -1,8 +1,7 @@
 import path from 'path';
-import { EXTERNAL_MODE, EXTERNAL_NODE_MODULES, EXTERNAL_ROOT } from './scripts/with-external-node-modules.mjs';
+import { defineConfig } from 'vitest/config';
 
-export default {
-  ...(EXTERNAL_MODE ? { cacheDir: `${EXTERNAL_ROOT}/.vite-cache` } : {}),
+export default defineConfig({
   resolve: {
     alias: {
       obsidian: path.resolve(__dirname, 'tests/__mocks__/obsidian.ts'),
@@ -13,8 +12,5 @@ export default {
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
-    deps: {
-      ...(EXTERNAL_MODE ? { moduleDirectories: [EXTERNAL_NODE_MODULES] } : {}),
-    },
   },
-};
+});

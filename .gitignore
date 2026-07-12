@@ -23,6 +23,7 @@ data.json
 
 # ── GSD baseline (auto-generated) ──
 .gsd-id
+.gsd/
 .bg-shell/
 Thumbs.db
 *.swp
@@ -35,7 +36,6 @@ Thumbs.db
 .env.*
 !.env.example
 node_modules/
-.tsconfig.external-node-modules.json
 .next/
 dist/
 build/
